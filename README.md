@@ -38,7 +38,7 @@ The module has been tested with:
 |------|--------|---------|
 | <a name="module_database"></a> [database](#module\_database) | ./modules/database | n/a |
 | <a name="module_gke"></a> [gke](#module\_gke) | ./modules/gke | n/a |
-| <a name="module_operator"></a> [operator](#module\_operator) | github.com/MaterializeInc/terraform-helm-materialize | v0.1.4 |
+| <a name="module_operator"></a> [operator](#module\_operator) | github.com/MaterializeInc/terraform-helm-materialize | v0.1.5 |
 | <a name="module_storage"></a> [storage](#module\_storage) | ./modules/storage | n/a |
 
 ## Resources
@@ -54,6 +54,7 @@ The module has been tested with:
 |------|-------------|------|---------|:--------:|
 | <a name="input_database_config"></a> [database\_config](#input\_database\_config) | Cloud SQL configuration | <pre>object({<br/>    tier     = optional(string, "db-custom-2-4096")<br/>    version  = optional(string, "POSTGRES_15")<br/>    password = string<br/>    username = optional(string, "materialize")<br/>    db_name  = optional(string, "materialize")<br/>  })</pre> | n/a | yes |
 | <a name="input_gke_config"></a> [gke\_config](#input\_gke\_config) | GKE cluster configuration. Make sure to use large enough machine types for your Materialize instances. | <pre>object({<br/>    node_count     = number<br/>    machine_type   = string<br/>    disk_size_gb   = number<br/>    min_nodes      = number<br/>    max_nodes      = number<br/>    node_locations = list(string)<br/>  })</pre> | <pre>{<br/>  "disk_size_gb": 50,<br/>  "machine_type": "e2-standard-4",<br/>  "max_nodes": 2,<br/>  "min_nodes": 1,<br/>  "node_count": 1,<br/>  "node_locations": []<br/>}</pre> | no |
+| <a name="input_helm_chart"></a> [helm\_chart](#input\_helm\_chart) | Chart name from repository or local path to chart. For local charts, set the path to the chart directory. | `string` | `"materialize-operator"` | no |
 | <a name="input_helm_values"></a> [helm\_values](#input\_helm\_values) | Values to pass to the Helm chart | `any` | `{}` | no |
 | <a name="input_install_materialize_operator"></a> [install\_materialize\_operator](#input\_install\_materialize\_operator) | Whether to install the Materialize operator | `bool` | `false` | no |
 | <a name="input_install_metrics_server"></a> [install\_metrics\_server](#input\_install\_metrics\_server) | Whether to install the metrics-server for the Materialize Console | `bool` | `true` | no |
@@ -67,6 +68,7 @@ The module has been tested with:
 | <a name="input_prefix"></a> [prefix](#input\_prefix) | Prefix to be used for resource names | `string` | `"materialize"` | no |
 | <a name="input_project_id"></a> [project\_id](#input\_project\_id) | The ID of the project where resources will be created | `string` | n/a | yes |
 | <a name="input_region"></a> [region](#input\_region) | The region where resources will be created | `string` | `"us-central1"` | no |
+| <a name="input_use_local_chart"></a> [use\_local\_chart](#input\_use\_local\_chart) | Whether to use a local chart instead of one from a repository | `bool` | `false` | no |
 
 ## Outputs
 

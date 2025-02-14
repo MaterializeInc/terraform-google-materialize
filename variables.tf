@@ -77,8 +77,21 @@ variable "labels" {
   default     = {}
 }
 
+# Materialize Helm Chart Variables
 variable "install_materialize_operator" {
   description = "Whether to install the Materialize operator"
+  type        = bool
+  default     = false
+}
+
+variable "helm_chart" {
+  description = "Chart name from repository or local path to chart. For local charts, set the path to the chart directory."
+  type        = string
+  default     = "materialize-operator"
+}
+
+variable "use_local_chart" {
+  description = "Whether to use a local chart instead of one from a repository"
   type        = bool
   default     = false
 }
