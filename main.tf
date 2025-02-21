@@ -57,7 +57,7 @@ module "storage" {
 }
 
 module "operator" {
-  source = "github.com/MaterializeInc/terraform-helm-materialize?ref=v0.1.5"
+  source = "github.com/MaterializeInc/terraform-helm-materialize?ref=v0.1.6"
 
   count = var.install_materialize_operator ? 1 : 0
 
@@ -71,7 +71,7 @@ module "operator" {
 
   namespace          = var.namespace
   environment        = var.prefix
-  operator_version   = var.operator_version
+  operator_version   = try(var.operator_version, null)
   operator_namespace = var.operator_namespace
 
   helm_values = local.merged_helm_values
