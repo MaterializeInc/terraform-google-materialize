@@ -158,6 +158,18 @@ variable "install_metrics_server" {
   default     = false
 }
 
+variable "storage_bucket_versioning" {
+  description = "Enable bucket versioning (Disabled by default due to deletion timeouts)."
+  type        = bool
+  default     = false
+}
+
+variable "storage_bucket_version_ttl" {
+  description = "Sets the TTL (in days) on non current sotarge bucket objects."
+  type        = number
+  default     = null
+}
+
 variable "install_cert_manager" {
   description = "Whether to install cert-manager."
   type        = bool
