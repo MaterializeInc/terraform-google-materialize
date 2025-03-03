@@ -159,3 +159,14 @@ variable "install_metrics_server" {
   type        = bool
   default     = false
 }
+
+variable "storage_bucket_versioning" {
+  description = "Enable bucket versioning (Disabled by default due to deletion timeouts)."
+  type        = bool
+  default     = false
+}
+
+variable "storage_bucket_version_ttl" {
+  description = "Sets the TTL (in days) on non current sotarge bucket objects."
+  type        = option(number)
+}
