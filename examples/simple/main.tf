@@ -89,13 +89,20 @@ output "connection_strings" {
 variable "materialize_instances" {
   description = "List of Materialize instances to be created."
   type = list(object({
-    name            = string
-    namespace       = string
-    database_name   = string
-    cpu_request     = string
-    memory_request  = string
-    memory_limit    = string
-    create_database = optional(bool)
+    name                    = string
+    namespace               = optional(string)
+    database_name           = string
+    create_database         = optional(bool, true)
+    environmentd_version    = optional(string, "v0.130.4")
+    cpu_request             = optional(string, "1")
+    memory_request          = optional(string, "1Gi")
+    memory_limit            = optional(string, "1Gi")
+    in_place_rollout        = optional(bool, false)
+    request_rollout         = optional(string)
+    force_rollout           = optional(string)
+    balancer_memory_request = optional(string, "256Mi")
+    balancer_memory_limit   = optional(string, "256Mi")
+    balancer_cpu_request    = optional(string, "100m")
   }))
   default = []
 }

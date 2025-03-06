@@ -153,6 +153,10 @@ locals {
       in_place_rollout = instance.in_place_rollout
       request_rollout  = instance.request_rollout
       force_rollout    = instance.force_rollout
+
+      balancer_cpu_request    = instance.balancer_cpu_request
+      balancer_memory_request = instance.balancer_memory_request
+      balancer_memory_limit   = instance.balancer_memory_limit
     }
   ]
 }
