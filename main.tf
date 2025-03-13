@@ -5,14 +5,13 @@ locals {
   })
 }
 
-
 provider "google" {
   project = var.project_id
   region  = var.region
 }
 
-module "gke" {
-  source = "./modules/gke"
+module "networking" {
+  source = "./modules/networking"
 
   project_id    = var.project_id
   region        = var.region
@@ -20,6 +19,19 @@ module "gke" {
   subnet_cidr   = var.network_config.subnet_cidr
   pods_cidr     = var.network_config.pods_cidr
   services_cidr = var.network_config.services_cidr
+}
+
+module "gke" {
+  source = "./modules/gke"
+
+  depends_on = [module.networking]
+
+  project_id         = var.project_id
+  region             = var.region
+  prefix             = var.prefix
+  network_name       = module.networking.network_name
+  subnet_name        = module.networking.subnet_name
+  network_dependency = module.networking.private_vpc_connection
 
   node_count   = var.gke_config.node_count
   machine_type = var.gke_config.machine_type
@@ -34,7 +46,10 @@ module "gke" {
 module "database" {
   source = "./modules/database"
 
-  depends_on = [module.gke]
+  depends_on = [
+    module.networking,
+    module.gke
+  ]
 
   database_name = var.database_config.db_name
   database_user = var.database_config.username
@@ -42,7 +57,7 @@ module "database" {
   project_id = var.project_id
   region     = var.region
   prefix     = var.prefix
-  network_id = module.gke.network_id
+  network_id = module.networking.network_id
 
   tier       = var.database_config.tier
   db_version = var.database_config.version

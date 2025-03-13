@@ -30,7 +30,7 @@ The module has been tested with:
 
 | Name | Version |
 |------|---------|
-| <a name="provider_google"></a> [google](#provider\_google) | 6.21.0 |
+| <a name="provider_google"></a> [google](#provider\_google) | 6.24.0 |
 
 ## Modules
 
@@ -38,7 +38,8 @@ The module has been tested with:
 |------|--------|---------|
 | <a name="module_database"></a> [database](#module\_database) | ./modules/database | n/a |
 | <a name="module_gke"></a> [gke](#module\_gke) | ./modules/gke | n/a |
-| <a name="module_operator"></a> [operator](#module\_operator) | github.com/MaterializeInc/terraform-helm-materialize | v0.1.7 |
+| <a name="module_networking"></a> [networking](#module\_networking) | ./modules/networking | n/a |
+| <a name="module_operator"></a> [operator](#module\_operator) | github.com/MaterializeInc/terraform-helm-materialize | v0.1.8 |
 | <a name="module_storage"></a> [storage](#module\_storage) | ./modules/storage | n/a |
 
 ## Resources
@@ -59,7 +60,7 @@ The module has been tested with:
 | <a name="input_install_materialize_operator"></a> [install\_materialize\_operator](#input\_install\_materialize\_operator) | Whether to install the Materialize operator | `bool` | `true` | no |
 | <a name="input_install_metrics_server"></a> [install\_metrics\_server](#input\_install\_metrics\_server) | Whether to install the metrics-server for the Materialize Console. Defaults to false since GKE installs one by default in the kube-system namespace. Only set to true if the GKE cluster was deployed with [monitoring explicitly turned off](https://cloud.google.com/kubernetes-engine/docs/how-to/configure-metrics#:~:text=To%20disable%20system%20metric%20collection,for%20the%20%2D%2Dmonitoring%20flag). Refer to the [GKE docs](https://cloud.google.com/kubernetes-engine/docs/how-to/configure-metrics#:~:text=To%20disable%20system%20metric%20collection,for%20the%20%2D%2Dmonitoring%20flag) for more information, including impact to GKE customer support efforts. | `bool` | `false` | no |
 | <a name="input_labels"></a> [labels](#input\_labels) | Labels to apply to all resources | `map(string)` | `{}` | no |
-| <a name="input_materialize_instances"></a> [materialize\_instances](#input\_materialize\_instances) | Configuration for Materialize instances | <pre>list(object({<br/>    name                 = string<br/>    namespace            = optional(string)<br/>    database_name        = string<br/>    create_database      = optional(bool, true)<br/>    environmentd_version = optional(string, "v0.130.4")<br/>    cpu_request          = optional(string, "1")<br/>    memory_request       = optional(string, "1Gi")<br/>    memory_limit         = optional(string, "1Gi")<br/>    in_place_rollout     = optional(bool, false)<br/>    request_rollout      = optional(string)<br/>    force_rollout        = optional(string)<br/>  }))</pre> | `[]` | no |
+| <a name="input_materialize_instances"></a> [materialize\_instances](#input\_materialize\_instances) | Configuration for Materialize instances | <pre>list(object({<br/>    name                    = string<br/>    namespace               = optional(string)<br/>    database_name           = string<br/>    create_database         = optional(bool, true)<br/>    environmentd_version    = optional(string, "v0.130.4")<br/>    cpu_request             = optional(string, "1")<br/>    memory_request          = optional(string, "1Gi")<br/>    memory_limit            = optional(string, "1Gi")<br/>    in_place_rollout        = optional(bool, false)<br/>    request_rollout         = optional(string)<br/>    force_rollout           = optional(string)<br/>    balancer_memory_request = optional(string, "256Mi")<br/>    balancer_memory_limit   = optional(string, "256Mi")<br/>    balancer_cpu_request    = optional(string, "100m")<br/>  }))</pre> | `[]` | no |
 | <a name="input_namespace"></a> [namespace](#input\_namespace) | Kubernetes namespace for Materialize | `string` | `"materialize"` | no |
 | <a name="input_network_config"></a> [network\_config](#input\_network\_config) | Network configuration for the GKE cluster | <pre>object({<br/>    subnet_cidr   = string<br/>    pods_cidr     = string<br/>    services_cidr = string<br/>  })</pre> | <pre>{<br/>  "pods_cidr": "10.48.0.0/14",<br/>  "services_cidr": "10.52.0.0/20",<br/>  "subnet_cidr": "10.0.0.0/20"<br/>}</pre> | no |
 | <a name="input_operator_namespace"></a> [operator\_namespace](#input\_operator\_namespace) | Namespace for the Materialize operator | `string` | `"materialize"` | no |
@@ -77,6 +78,7 @@ The module has been tested with:
 | <a name="output_connection_strings"></a> [connection\_strings](#output\_connection\_strings) | Formatted connection strings for Materialize |
 | <a name="output_database"></a> [database](#output\_database) | Cloud SQL instance details |
 | <a name="output_gke_cluster"></a> [gke\_cluster](#output\_gke\_cluster) | GKE cluster details |
+| <a name="output_network"></a> [network](#output\_network) | Network details |
 | <a name="output_operator"></a> [operator](#output\_operator) | Materialize operator details |
 | <a name="output_service_accounts"></a> [service\_accounts](#output\_service\_accounts) | Service account details |
 | <a name="output_storage"></a> [storage](#output\_storage) | GCS bucket details |

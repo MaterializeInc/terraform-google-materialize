@@ -13,19 +13,19 @@ variable "prefix" {
   type        = string
 }
 
-variable "subnet_cidr" {
-  description = "CIDR range for the subnet"
+variable "network_name" {
+  description = "The name of the VPC network"
   type        = string
 }
 
-variable "pods_cidr" {
-  description = "CIDR range for pods"
+variable "subnet_name" {
+  description = "The name of the subnet"
   type        = string
 }
 
-variable "services_cidr" {
-  description = "CIDR range for services"
-  type        = string
+variable "network_dependency" {
+  description = "Dependency on the network resources"
+  type        = any
 }
 
 variable "node_count" {

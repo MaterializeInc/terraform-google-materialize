@@ -8,6 +8,15 @@ output "gke_cluster" {
   sensitive = true
 }
 
+output "network" {
+  description = "Network details"
+  value = {
+    network_id   = module.networking.network_id
+    network_name = module.networking.network_name
+    subnet_name  = module.networking.subnet_name
+  }
+}
+
 output "database" {
   description = "Cloud SQL instance details"
   value = {
@@ -65,7 +74,6 @@ output "connection_strings" {
   }
   sensitive = true
 }
-
 
 output "operator" {
   description = "Materialize operator details"
