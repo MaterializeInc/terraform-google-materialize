@@ -6,6 +6,14 @@ terraform {
       source  = "hashicorp/google"
       version = ">= 6.0"
     }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 2.0"
+    }
+    helm = {
+      source  = "hashicorp/helm"
+      version = "~> 2.0"
+    }
     random = {
       source  = "hashicorp/random"
       version = "~> 3.0"
@@ -16,6 +24,23 @@ terraform {
 provider "google" {
   project = var.project_id
   region  = var.region
+}
+
+# Configure kubernetes provider with GKE cluster credentials
+data "google_client_config" "default" {}
+
+provider "kubernetes" {
+  host                   = "https://${module.materialize.gke_cluster.endpoint}"
+  token                  = data.google_client_config.default.access_token
+  cluster_ca_certificate = base64decode(module.materialize.gke_cluster.ca_certificate)
+}
+
+provider "helm" {
+  kubernetes {
+    host                   = "https://${module.materialize.gke_cluster.endpoint}"
+    token                  = data.google_client_config.default.access_token
+    cluster_ca_certificate = base64decode(module.materialize.gke_cluster.ca_certificate)
+  }
 }
 
 module "materialize" {
@@ -47,6 +72,12 @@ module "materialize" {
 
   # Once the operator is installed, you can define your Materialize instances here.
   materialize_instances = var.materialize_instances
+
+  providers = {
+    google     = google
+    kubernetes = kubernetes
+    helm       = helm
+  }
 }
 
 variable "project_id" {
@@ -65,7 +96,6 @@ variable "prefix" {
   type        = string
   default     = "mz-simple"
 }
-
 
 resource "random_password" "pass" {
   length  = 20

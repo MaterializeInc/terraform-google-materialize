@@ -30,7 +30,7 @@ The module has been tested with:
 
 | Name | Version |
 |------|---------|
-| <a name="provider_google"></a> [google](#provider\_google) | 6.24.0 |
+| <a name="provider_google"></a> [google](#provider\_google) | 6.25.0 |
 
 ## Modules
 
@@ -47,7 +47,6 @@ The module has been tested with:
 | Name | Type |
 |------|------|
 | [google_client_config.current](https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/client_config) | data source |
-| [google_client_config.default](https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/client_config) | data source |
 
 ## Inputs
 

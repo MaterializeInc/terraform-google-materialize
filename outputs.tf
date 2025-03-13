@@ -1,9 +1,10 @@
 output "gke_cluster" {
   description = "GKE cluster details"
   value = {
-    name     = module.gke.cluster_name
-    endpoint = module.gke.cluster_endpoint
-    location = module.gke.cluster_location
+    name           = module.gke.cluster_name
+    endpoint       = module.gke.cluster_endpoint
+    location       = module.gke.cluster_location
+    ca_certificate = module.gke.cluster_ca_certificate
   }
   sensitive = true
 }
