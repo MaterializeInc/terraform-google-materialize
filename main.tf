@@ -21,12 +21,11 @@ module "gke" {
 
   depends_on = [module.networking]
 
-  project_id         = var.project_id
-  region             = var.region
-  prefix             = var.prefix
-  network_name       = module.networking.network_name
-  subnet_name        = module.networking.subnet_name
-  network_dependency = module.networking.private_vpc_connection
+  project_id   = var.project_id
+  region       = var.region
+  prefix       = var.prefix
+  network_name = module.networking.network_name
+  subnet_name  = module.networking.subnet_name
 
   node_count   = var.gke_config.node_count
   machine_type = var.gke_config.machine_type

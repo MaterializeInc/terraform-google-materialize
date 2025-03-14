@@ -18,7 +18,6 @@ resource "google_container_cluster" "primary" {
   depends_on = [
     google_service_account.gke_sa,
     google_service_account.workload_identity_sa,
-    var.network_dependency # This ensures the network is created first
   ]
 
   name     = "${var.prefix}-gke"

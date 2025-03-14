@@ -125,6 +125,11 @@ variable "operator_version" {
   default     = null
 }
 
+output "network" {
+  description = "Network details"
+  value       = module.materialize.network
+}
+
 variable "orchestratord_version" {
   description = "Version of the Materialize orchestrator to install"
   type        = string

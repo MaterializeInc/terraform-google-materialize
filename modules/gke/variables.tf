@@ -23,11 +23,6 @@ variable "subnet_name" {
   type        = string
 }
 
-variable "network_dependency" {
-  description = "Dependency on the network resources"
-  type        = any
-}
-
 variable "node_count" {
   description = "Number of nodes in the GKE cluster"
   type        = number
