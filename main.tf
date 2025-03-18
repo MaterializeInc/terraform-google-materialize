@@ -116,7 +116,7 @@ locals {
       }
       cloudProvider = {
         type   = "gcp"
-        region = data.google_client_config.current.region
+        region = var.region
         providers = {
           gcp = {
             enabled = true
@@ -166,5 +166,3 @@ locals {
     }
   ]
 }
-
-data "google_client_config" "current" {}

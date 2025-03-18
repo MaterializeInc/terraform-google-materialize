@@ -28,9 +28,7 @@ The module has been tested with:
 
 ## Providers
 
-| Name | Version |
-|------|---------|
-| <a name="provider_google"></a> [google](#provider\_google) | 6.25.0 |
+No providers.
 
 ## Modules
 
@@ -44,9 +42,7 @@ The module has been tested with:
 
 ## Resources
 
-| Name | Type |
-|------|------|
-| [google_client_config.current](https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/client_config) | data source |
+No resources.
 
 ## Inputs
 
