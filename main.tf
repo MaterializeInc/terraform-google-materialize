@@ -67,6 +67,8 @@ module "storage" {
   region          = var.region
   prefix          = var.prefix
   service_account = module.gke.workload_identity_sa_email
+  versioning      = var.storage_bucket_versioning
+  version_ttl     = var.storage_bucket_version_ttl
 
   labels = local.common_labels
 }

@@ -24,6 +24,13 @@ variable "labels" {
   default     = {}
 }
 
+
+variable "versioning" {
+  description = "Enable bucket versioning (Disabled by default due to deletion timeouts)."
+  type        = bool
+  default     = false
+}
+
 variable "lifecycle_rules" {
   description = "List of lifecycle rules to configure"
   type = list(object({
@@ -49,4 +56,11 @@ variable "lifecycle_rules" {
       }
     }
   ]
+}
+
+variable "version_ttl" {
+  description = "Sets the TTL (in days) on non current sotarge bucket objects."
+  type        = number
+  default     = null
+
 }

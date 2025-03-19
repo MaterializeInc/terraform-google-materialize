@@ -65,6 +65,8 @@ No resources.
 | <a name="input_project_id"></a> [project\_id](#input\_project\_id) | The ID of the project where resources will be created | `string` | n/a | yes |
 | <a name="input_region"></a> [region](#input\_region) | The region where resources will be created | `string` | `"us-central1"` | no |
 | <a name="input_use_local_chart"></a> [use\_local\_chart](#input\_use\_local\_chart) | Whether to use a local chart instead of one from a repository | `bool` | `false` | no |
+| <a name="input_storage_bucket_versioning"></a> [use\_storage\_bucket\_versioning](#input\_use\_storage\_bucket\_versioning) | Enable bucket versioning (Disabled by default due to deletion timeouts). | `bool` | `false` | no |
+| <a name="input_storage_bucket_version_ttl"></a> [use\_storage\_bucket\_versioning\_ttl](#input\_use\_storage\_bucket\_versioning\_ttl) | Sets the TTL (in days) on non current sotarge bucket objects. | `optional(number)` | `null` | no |
 
 ## Outputs
 
