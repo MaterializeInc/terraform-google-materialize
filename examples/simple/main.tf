@@ -54,6 +54,12 @@ module "materialize" {
   region     = var.region
   prefix     = var.prefix
 
+  network_config = {
+    subnet_cidr   = "10.0.0.0/20"
+    pods_cidr     = "10.48.0.0/14"
+    services_cidr = "10.52.0.0/20"
+  }
+
   database_config = {
     tier     = "db-custom-2-4096"
     version  = "POSTGRES_15"

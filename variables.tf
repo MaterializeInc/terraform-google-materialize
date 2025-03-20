@@ -22,11 +22,6 @@ variable "network_config" {
     pods_cidr     = string
     services_cidr = string
   })
-  default = {
-    subnet_cidr   = "10.0.0.0/20"
-    pods_cidr     = "10.48.0.0/14"
-    services_cidr = "10.52.0.0/20"
-  }
 }
 
 variable "gke_config" {

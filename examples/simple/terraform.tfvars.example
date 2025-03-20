@@ -2,6 +2,13 @@ project_id = "enter-your-gcp-project-id"
 prefix  = "enter-a-prefix" // e.g., mz-simple, my-mz-demo
 region = "us-central1"
 
+# Network configuration
+network_config = {
+  subnet_cidr   = "10.0.0.0/20"
+  pods_cidr     = "10.48.0.0/14"
+  services_cidr = "10.52.0.0/20"
+}
+
 # Once the operator is installed, you can define your Materialize instances here.
 # Uncomment the following block (or provide your own instances) to configure them:
 
