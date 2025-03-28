@@ -1,3 +1,17 @@
+locals {
+  version_ttl = (var.versioning && var.version_ttl != null) ? [{
+    action = {
+      type = "delete"
+    }
+    condition = {
+      daysSinceNoncurrentTime = var.version_ttl
+    }
+  }] : []
+
+  lifecycle_rules = concat(var.lifecycle_rules, local.version_ttl)
+
+}
+
 resource "google_storage_bucket" "materialize" {
   name          = "${var.prefix}-storage-${var.project_id}"
   location      = var.region
@@ -7,11 +21,11 @@ resource "google_storage_bucket" "materialize" {
   uniform_bucket_level_access = true
 
   versioning {
-    enabled = true
+    enabled = var.versioning
   }
 
   dynamic "lifecycle_rule" {
-    for_each = var.lifecycle_rules
+    for_each = local.lifecycle_rules
     content {
       action {
         type          = lifecycle_rule.value.action.type
@@ -25,6 +39,7 @@ resource "google_storage_bucket" "materialize" {
       }
     }
   }
+
 
   labels = var.labels
 }
