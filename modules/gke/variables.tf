@@ -58,3 +58,34 @@ variable "labels" {
   type        = map(string)
   default     = {}
 }
+
+# Disk setup variables
+variable "enable_disk_setup" {
+  description = "Whether to enable the local NVMe SSD disks setup script for NVMe storage"
+  type        = bool
+  default     = true
+}
+
+variable "local_ssd_count" {
+  description = "Number of local NVMe SSDs to attach to each node. In GCP, each disk is 375GB. For Materialize, you need to have a 1:2 ratio of disk to memory. If you have 8 CPUs and 64GB of memory, you need 128GB of disk. This means you need at least 1 local NVMe SSD. If you go with a larger machine type, you can increase the number of local NVMe SSDs."
+  type        = number
+  default     = 1
+}
+
+variable "install_openebs" {
+  description = "Whether to install OpenEBS for NVMe storage"
+  type        = bool
+  default     = true
+}
+
+variable "openebs_namespace" {
+  description = "Namespace for OpenEBS components"
+  type        = string
+  default     = "openebs"
+}
+
+variable "openebs_version" {
+  description = "Version of OpenEBS Helm chart to install"
+  type        = string
+  default     = "4.2.0"
+}

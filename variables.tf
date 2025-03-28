@@ -35,8 +35,8 @@ variable "gke_config" {
   })
   default = {
     node_count   = 1
-    machine_type = "e2-standard-4"
-    disk_size_gb = 50
+    machine_type = "n2-highmem-8"
+    disk_size_gb = 100
     min_nodes    = 1
     max_nodes    = 2
   }
@@ -201,4 +201,31 @@ variable "cert_manager_chart_version" {
   description = "Version of the cert-manager helm chart to install."
   type        = string
   default     = "v1.17.1"
+}
+
+# Disk support configuration
+variable "enable_disk_support" {
+  description = "Enable disk support for Materialize using OpenEBS and local SSDs. When enabled, this configures OpenEBS, runs the disk setup script, and creates appropriate storage classes."
+  type        = bool
+  default     = true
+}
+
+variable "disk_support_config" {
+  description = "Advanced configuration for disk support (only used when enable_disk_support = true)"
+  type = object({
+    install_openebs           = optional(bool, true)
+    run_disk_setup_script     = optional(bool, true)
+    local_ssd_count           = optional(number, 1)
+    create_storage_class      = optional(bool, true)
+    openebs_version           = optional(string, "4.2.0")
+    openebs_namespace         = optional(string, "openebs")
+    storage_class_name        = optional(string, "openebs-lvm-instance-store-ext4")
+    storage_class_provisioner = optional(string, "local.csi.openebs.io")
+    storage_class_parameters = optional(object({
+      storage  = optional(string, "lvm")
+      fsType   = optional(string, "ext4")
+      volgroup = optional(string, "instance-store-vg")
+    }), {})
+  })
+  default = {}
 }

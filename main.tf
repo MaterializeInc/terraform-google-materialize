@@ -3,6 +3,23 @@ locals {
     managed_by = "terraform"
     module     = "materialize"
   })
+
+  # Disk support configuration
+  disk_config = {
+    install_openebs           = var.enable_disk_support ? lookup(var.disk_support_config, "install_openebs", true) : false
+    run_disk_setup_script     = var.enable_disk_support ? lookup(var.disk_support_config, "run_disk_setup_script", true) : false
+    local_ssd_count           = lookup(var.disk_support_config, "local_ssd_count", 1)
+    create_storage_class      = var.enable_disk_support ? lookup(var.disk_support_config, "create_storage_class", true) : false
+    openebs_version           = lookup(var.disk_support_config, "openebs_version", "4.2.0")
+    openebs_namespace         = lookup(var.disk_support_config, "openebs_namespace", "openebs")
+    storage_class_name        = lookup(var.disk_support_config, "storage_class_name", "openebs-lvm-instance-store-ext4")
+    storage_class_provisioner = lookup(var.disk_support_config, "storage_class_provisioner", "local.csi.openebs.io")
+    storage_class_parameters = {
+      storage  = try(var.disk_support_config.storage_class_parameters.storage, "lvm")
+      fsType   = try(var.disk_support_config.storage_class_parameters.fsType, "ext4")
+      volgroup = try(var.disk_support_config.storage_class_parameters.volgroup, "instance-store-vg")
+    }
+  }
 }
 
 module "networking" {
@@ -32,6 +49,13 @@ module "gke" {
   disk_size_gb = var.gke_config.disk_size_gb
   min_nodes    = var.gke_config.min_nodes
   max_nodes    = var.gke_config.max_nodes
+
+  # Disk support configuration
+  enable_disk_setup = local.disk_config.run_disk_setup_script
+  local_ssd_count   = local.disk_config.local_ssd_count
+  install_openebs   = local.disk_config.install_openebs
+  openebs_namespace = local.disk_config.openebs_namespace
+  openebs_version   = local.disk_config.openebs_version
 
   namespace = var.namespace
   labels    = local.common_labels
@@ -158,6 +182,14 @@ locals {
         }
       }
     }
+    storage = var.enable_disk_support ? {
+      storageClass = {
+        create      = local.disk_config.create_storage_class
+        name        = local.disk_config.storage_class_name
+        provisioner = local.disk_config.storage_class_provisioner
+        parameters  = local.disk_config.storage_class_parameters
+      }
+    } : {}
     tls = (var.use_self_signed_cluster_issuer && length(var.materialize_instances) > 0) ? {
       defaultCertificateSpecs = {
         balancerdExternal = {
