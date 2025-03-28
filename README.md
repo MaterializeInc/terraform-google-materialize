@@ -22,6 +22,71 @@ The module has been tested with:
 - PostgreSQL 15
 - Materialize Operator v0.1.0
 
+## Disk Support for Materialize on GCP
+
+This module supports configuring disk support for Materialize using local SSDs in GCP with OpenEBS and lgalloc.
+
+### Machine Types with Local SSDs in GCP
+
+When using disk support for Materialize on GCP, you need to use machine types that support local SSD attachment. Here are some recommended machine types:
+
+1. [N2 series](https://cloud.google.com/compute/docs/general-purpose-machines#n2d_machine_types) with local SSDs:
+   - For memory-optimized workloads similar to AWS r7gd, consider `n2-highmem-16` or `n2-highmem-32` with local SSDs
+   - Example: `n2-highmem-32` with 2 or more local SSDs
+
+2. [C2 series](https://cloud.google.com/compute/docs/compute-optimized-machines#c2_machine_types) with local SSDs:
+   - For compute-optimized workloads
+   - Example: `c2-standard-16` with local SSDs
+
+3. [N2D series](https://cloud.google.com/compute/docs/general-purpose-machines#n2d_machine_types) with local SSDs:
+   - AMD EPYC-based instances, often with good price/performance ratio
+   - Example: `n2d-highmem-32` with local SSDs
+
+### Enabling Disk Support
+
+To enable disk support with default settings in your Terraform configuration:
+
+```hcl
+enable_disk_support = true
+
+gke_config = {
+  node_count   = 3
+  machine_type = "n2-highmem-32"  # Choose a machine type that supports local SSDs
+  disk_size_gb = 100
+  min_nodes    = 3
+  max_nodes    = 5
+}
+```
+
+This will:
+1. Attach local SSDs to each node in the GKE cluster
+2. Install OpenEBS via Helm
+3. Configure local SSD devices using the [bootstrap](./modules/gke/bootstrap.sh) script
+4. Create appropriate storage classes for Materialize
+
+### Advanced Configuration
+
+For more control over the disk setup:
+
+```hcl
+enable_disk_support = true
+
+disk_support_config = {
+  local_ssd_count    = 1
+  openebs_version    = "4.2.0"
+  storage_class_name = "custom-storage-class"
+}
+```
+
+### Local SSD Limitations in GCP
+
+Note that there are some differences between AWS NVMe instance store and GCP local SSDs:
+
+1. GCP local SSDs have a fixed size of 375 GB each
+2. Local SSDs must be attached at instance creation time
+3. The number of local SSDs you can attach depends on the machine type
+4. Data on local SSDs is lost when the instance stops or is deleted
+
 ## Requirements
 
 | Name | Version |
@@ -58,7 +123,9 @@ No resources.
 | <a name="input_cert_manager_install_timeout"></a> [cert\_manager\_install\_timeout](#input\_cert\_manager\_install\_timeout) | Timeout for installing the cert-manager helm chart, in seconds. | `number` | `300` | no |
 | <a name="input_cert_manager_namespace"></a> [cert\_manager\_namespace](#input\_cert\_manager\_namespace) | The name of the namespace in which cert-manager is or will be installed. | `string` | `"cert-manager"` | no |
 | <a name="input_database_config"></a> [database\_config](#input\_database\_config) | Cloud SQL configuration | <pre>object({<br/>    tier     = optional(string, "db-custom-2-4096")<br/>    version  = optional(string, "POSTGRES_15")<br/>    password = string<br/>    username = optional(string, "materialize")<br/>    db_name  = optional(string, "materialize")<br/>  })</pre> | n/a | yes |
-| <a name="input_gke_config"></a> [gke\_config](#input\_gke\_config) | GKE cluster configuration. Make sure to use large enough machine types for your Materialize instances. | <pre>object({<br/>    node_count   = number<br/>    machine_type = string<br/>    disk_size_gb = number<br/>    min_nodes    = number<br/>    max_nodes    = number<br/>  })</pre> | <pre>{<br/>  "disk_size_gb": 50,<br/>  "machine_type": "e2-standard-4",<br/>  "max_nodes": 2,<br/>  "min_nodes": 1,<br/>  "node_count": 1<br/>}</pre> | no |
+| <a name="input_disk_support_config"></a> [disk\_support\_config](#input\_disk\_support\_config) | Advanced configuration for disk support (only used when enable\_disk\_support = true) | <pre>object({<br/>    install_openebs           = optional(bool, true)<br/>    run_disk_setup_script     = optional(bool, true)<br/>    local_ssd_count           = optional(number, 1)<br/>    create_storage_class      = optional(bool, true)<br/>    openebs_version           = optional(string, "4.2.0")<br/>    openebs_namespace         = optional(string, "openebs")<br/>    storage_class_name        = optional(string, "openebs-lvm-instance-store-ext4")<br/>    storage_class_provisioner = optional(string, "local.csi.openebs.io")<br/>    storage_class_parameters = optional(object({<br/>      storage  = optional(string, "lvm")<br/>      fsType   = optional(string, "ext4")<br/>      volgroup = optional(string, "instance-store-vg")<br/>    }), {})<br/>  })</pre> | `{}` | no |
+| <a name="input_enable_disk_support"></a> [enable\_disk\_support](#input\_enable\_disk\_support) | Enable disk support for Materialize using OpenEBS and local SSDs. When enabled, this configures OpenEBS, runs the disk setup script, and creates appropriate storage classes. | `bool` | `true` | no |
+| <a name="input_gke_config"></a> [gke\_config](#input\_gke\_config) | GKE cluster configuration. Make sure to use large enough machine types for your Materialize instances. | <pre>object({<br/>    node_count   = number<br/>    machine_type = string<br/>    disk_size_gb = number<br/>    min_nodes    = number<br/>    max_nodes    = number<br/>  })</pre> | <pre>{<br/>  "disk_size_gb": 100,<br/>  "machine_type": "n2-highmem-8",<br/>  "max_nodes": 2,<br/>  "min_nodes": 1,<br/>  "node_count": 1<br/>}</pre> | no |
 | <a name="input_helm_chart"></a> [helm\_chart](#input\_helm\_chart) | Chart name from repository or local path to chart. For local charts, set the path to the chart directory. | `string` | `"materialize-operator"` | no |
 | <a name="input_helm_values"></a> [helm\_values](#input\_helm\_values) | Values to pass to the Helm chart | `any` | `{}` | no |
 | <a name="input_install_cert_manager"></a> [install\_cert\_manager](#input\_install\_cert\_manager) | Whether to install cert-manager. | `bool` | `false` | no |

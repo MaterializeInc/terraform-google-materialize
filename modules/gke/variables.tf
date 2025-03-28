@@ -58,3 +58,34 @@ variable "labels" {
   type        = map(string)
   default     = {}
 }
+
+# Disk setup variables
+variable "enable_disk_setup" {
+  description = "Whether to enable the local SSD disk setup script for NVMe storage"
+  type        = bool
+  default     = true
+}
+
+variable "local_ssd_count" {
+  description = "Number of local SSDs to attach to each node"
+  type        = number
+  default     = 1
+}
+
+variable "install_openebs" {
+  description = "Whether to install OpenEBS for NVMe storage"
+  type        = bool
+  default     = true
+}
+
+variable "openebs_namespace" {
+  description = "Namespace for OpenEBS components"
+  type        = string
+  default     = "openebs"
+}
+
+variable "openebs_version" {
+  description = "Version of OpenEBS Helm chart to install"
+  type        = string
+  default     = "4.2.0"
+}
