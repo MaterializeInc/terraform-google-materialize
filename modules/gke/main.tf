@@ -57,6 +57,10 @@ resource "google_container_cluster" "primary" {
   }
 }
 
+locals {
+  disk_setup_script = var.enable_disk_setup ? file("${path.module}/bootstrap.sh") : ""
+}
+
 resource "google_container_node_pool" "primary_nodes" {
   provider = google
 
@@ -77,7 +81,7 @@ resource "google_container_node_pool" "primary_nodes" {
     disk_size_gb = var.disk_size_gb
 
     labels = merge(var.labels, {
-      "materialize.cloud/disk" = "true"
+      "materialize.cloud/disk" = var.enable_disk_setup ? "true" : "false"
       "workload"               = "materialize-instance"
     })
 
@@ -86,6 +90,12 @@ resource "google_container_node_pool" "primary_nodes" {
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
     ]
+
+    local_ssd_count = var.enable_disk_setup ? var.local_ssd_count : 0
+
+    metadata = {
+      startup_script = var.enable_disk_setup ? local.disk_setup_script : ""
+    }
 
     workload_metadata_config {
       mode = "GKE_METADATA"
@@ -107,5 +117,34 @@ resource "google_service_account_iam_binding" "workload_identity" {
   role               = "roles/iam.workloadIdentityUser"
   members = [
     "serviceAccount:${var.project_id}.svc.id.goog[${var.namespace}/orchestratord]"
+  ]
+}
+
+# Install OpenEBS for local SSD support
+resource "kubernetes_namespace" "openebs" {
+  count = var.install_openebs ? 1 : 0
+
+  metadata {
+    name = var.openebs_namespace
+  }
+}
+
+resource "helm_release" "openebs" {
+  count = var.install_openebs ? 1 : 0
+
+  name       = "openebs"
+  namespace  = kubernetes_namespace.openebs[0].metadata[0].name
+  repository = "https://openebs.github.io/openebs"
+  chart      = "openebs"
+  version    = var.openebs_version
+
+  set {
+    name  = "engines.replicated.mayastor.enabled"
+    value = "false"
+  }
+
+  depends_on = [
+    google_container_node_pool.primary_nodes,
+    kubernetes_namespace.openebs
   ]
 }
