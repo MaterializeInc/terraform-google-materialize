@@ -114,13 +114,17 @@ resource "google_service_account_iam_binding" "workload_identity" {
   ]
 }
 
-# Install OpenEBS for local SSD support
 resource "kubernetes_namespace" "openebs" {
   count = var.install_openebs ? 1 : 0
 
   metadata {
     name = var.openebs_namespace
   }
+
+  depends_on = [
+    google_container_cluster.primary,
+    google_container_node_pool.primary_nodes
+  ]
 }
 
 resource "helm_release" "openebs" {
@@ -145,8 +149,8 @@ resource "helm_release" "openebs" {
     value = "false"
   }
 
-
   depends_on = [
+    google_container_cluster.primary,
     google_container_node_pool.primary_nodes,
     kubernetes_namespace.openebs
   ]
@@ -168,7 +172,6 @@ resource "kubernetes_namespace" "disk_setup" {
   ]
 }
 
-# Create a ConfigMap containing the disk setup script
 resource "kubernetes_config_map" "disk_setup_script" {
   count = var.enable_disk_setup ? 1 : 0
 
