@@ -13,7 +13,7 @@ locals {
     openebs_version           = lookup(var.disk_support_config, "openebs_version", "4.2.0")
     openebs_namespace         = lookup(var.disk_support_config, "openebs_namespace", "openebs")
     storage_class_name        = lookup(var.disk_support_config, "storage_class_name", "openebs-lvm-instance-store-ext4")
-    storage_class_provisioner = lookup(var.disk_support_config, "storage_class_provisioner", "local.csi.openebs.io")
+    storage_class_provisioner = "local.csi.openebs.io"
     storage_class_parameters = {
       storage  = "lvm"
       fsType   = "ext4"

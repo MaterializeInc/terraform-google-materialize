@@ -253,6 +253,7 @@ resource "kubernetes_daemonset" "disk_setup" {
             }
             requests = {
               memory = "128Mi"
+              cpu    = "50m"
             }
           }
 
@@ -293,6 +294,7 @@ resource "kubernetes_daemonset" "disk_setup" {
             }
             requests = {
               memory = "32Mi"
+              cpu    = "50m"
             }
           }
 
