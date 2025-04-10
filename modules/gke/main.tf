@@ -290,11 +290,11 @@ resource "kubernetes_daemonset" "disk_setup" {
 
           resources {
             limits = {
-              memory = "32Mi"
+              memory = "8Mi"
             }
             requests = {
-              memory = "32Mi"
-              cpu    = "50m"
+              memory = "8Mi"
+              cpu    = "1m"
             }
           }
 
