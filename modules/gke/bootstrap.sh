@@ -6,9 +6,9 @@ echo "Starting GCP NVMe SSD setup"
 # Install required tools
 if command -v apt-get >/dev/null 2>&1; then
   apt-get update
-  apt-get install -y lvm2=2.03.11-2.1
+  apt-get install -y lvm2
 elif command -v yum >/dev/null 2>&1; then
-  yum install -y lvm2-2.03.11-5.el9
+  yum install -y lvm2
 else
   echo "No package manager found. Please install required tools manually."
   exit 1
@@ -17,37 +17,16 @@ fi
 # Find NVMe devices
 SSD_DEVICE_LIST=()
 
-# Try the standard GCP pattern first
-devices=$(find /dev/disk/by-id/ -name "google-local-nvme-ssd-*" 2>/dev/null || true)
+devices=$(find /dev/disk/by-id/ -name "google-local-ssd-*" 2>/dev/null || true)
 if [ -n "$devices" ]; then
   while read -r device; do
     SSD_DEVICE_LIST+=("$device")
   done <<<"$devices"
-fi
-
-# If no devices found via standard pattern, look for NVMe devices directly
-if [ ${#SSD_DEVICE_LIST[@]} -eq 0 ]; then
-  echo "No Local NVMe SSD devices found via standard pattern. Checking direct NVMe devices..."
-
-  for device in /dev/nvme*n*; do
-    # Skip if not a block device or if it's a partition
-    if [[ -b "$device" && ! "$device" =~ "p"[0-9]+ ]]; then
-      # Check if size is approximately 375GB
-      size_bytes=$(blockdev --getsize64 $device 2>/dev/null || echo 0)
-      # 375GB = approximately 402653184000 bytes
-      if ((size_bytes > 400000000000 && size_bytes < 405000000000)); then
-        echo "Found potential NVMe local SSD: $device ($((size_bytes / (1024 * 1024 * 1024))) GB)"
-        SSD_DEVICE_LIST+=("$device")
-      fi
-    fi
-  done
-fi
-
-echo "Found ${#SSD_DEVICE_LIST[@]} NVMe SSD devices: ${SSD_DEVICE_LIST[*]:-none}"
-
-if [ ${#SSD_DEVICE_LIST[@]} -eq 0 ]; then
-  echo "No usable NVMe SSD devices found"
-  exit 0
+else
+  echo "ERROR: No Local SSD devices found at standard path /dev/disk/by-id/google-local-ssd-*"
+  echo "Please verify that local SSDs were properly attached to this instance"
+  echo "See: https://cloud.google.com/compute/docs/disks/local-ssd"
+  exit 1
 fi
 
 # Check if any of the devices are already in use by LVM

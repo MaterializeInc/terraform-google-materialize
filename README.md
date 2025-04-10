@@ -31,8 +31,12 @@ This module supports configuring disk support for Materialize using local SSDs i
 When using disk support for Materialize on GCP, you need to use machine types that support local SSD attachment. Here are some recommended machine types:
 
 * [N2 series](https://cloud.google.com/compute/docs/general-purpose-machines#n2d_machine_types) with local NVMe SSDs:
-   * For memory-optimized workloads similar to AWS r7gd, consider `n2-highmem-16` or `n2-highmem-32` with local NVMe SSDs
+   * For memory-optimized workloads, consider `n2-highmem-16` or `n2-highmem-32` with local NVMe SSDs
    * Example: `n2-highmem-32` with 2 or more local SSDs
+
+* [N2D series](https://cloud.google.com/compute/docs/general-purpose-machines#n2d_machine_types) with local NVMe SSDs:
+   * For memory-optimized workloads, consider `n2d-highmem-16` or `n2d-highmem-32` with local NVMe SSDs
+   * Example: `n2d-highmem-32` with 2 or more local SSDs
 
 ### Enabling Disk Support
 
@@ -105,15 +109,6 @@ The following table helps you determine the appropriate number of local SSDs bas
 Remember that each local NVMe SSD in GCP provides 375GB of storage.
 Choose the appropriate `local_ssd_count` to make sure your total disk space is at least twice the amount of RAM in your machine type for optimal Materialize performance.
 
-### Local SSD Limitations in GCP
-
-Note that there are some differences between AWS NVMe instance store and GCP local SSDs:
-
-1. GCP local NVMe SSDs have a fixed size of 375 GB each
-2. Local SSDs must be attached at instance creation time
-3. The number of local SSDs you can attach depends on the machine type
-4. Data on local SSDs is lost when the instance stops or is deleted
-
 ## Requirements
 
 | Name | Version |
@@ -151,7 +146,7 @@ No resources.
 | <a name="input_cert_manager_install_timeout"></a> [cert\_manager\_install\_timeout](#input\_cert\_manager\_install\_timeout) | Timeout for installing the cert-manager helm chart, in seconds. | `number` | `300` | no |
 | <a name="input_cert_manager_namespace"></a> [cert\_manager\_namespace](#input\_cert\_manager\_namespace) | The name of the namespace in which cert-manager is or will be installed. | `string` | `"cert-manager"` | no |
 | <a name="input_database_config"></a> [database\_config](#input\_database\_config) | Cloud SQL configuration | <pre>object({<br/>    tier     = optional(string, "db-custom-2-4096")<br/>    version  = optional(string, "POSTGRES_15")<br/>    password = string<br/>    username = optional(string, "materialize")<br/>    db_name  = optional(string, "materialize")<br/>  })</pre> | n/a | yes |
-| <a name="input_disk_support_config"></a> [disk\_support\_config](#input\_disk\_support\_config) | Advanced configuration for disk support (only used when enable\_disk\_support = true) | <pre>object({<br/>    install_openebs           = optional(bool, true)<br/>    run_disk_setup_script     = optional(bool, true)<br/>    local_ssd_count           = optional(number, 1)<br/>    create_storage_class      = optional(bool, true)<br/>    openebs_version           = optional(string, "4.2.0")<br/>    openebs_namespace         = optional(string, "openebs")<br/>    storage_class_name        = optional(string, "openebs-lvm-instance-store-ext4")<br/>    storage_class_provisioner = optional(string, "local.csi.openebs.io")<br/>    storage_class_parameters = optional(object({<br/>      storage  = optional(string, "lvm")<br/>      volgroup = optional(string, "instance-store-vg")<br/>    }), {})<br/>  })</pre> | `{}` | no |
+| <a name="input_disk_support_config"></a> [disk\_support\_config](#input\_disk\_support\_config) | Advanced configuration for disk support (only used when enable\_disk\_support = true) | <pre>object({<br/>    install_openebs           = optional(bool, true)<br/>    run_disk_setup_script     = optional(bool, true)<br/>    local_ssd_count           = optional(number, 1)<br/>    create_storage_class      = optional(bool, true)<br/>    openebs_version           = optional(string, "4.2.0")<br/>    openebs_namespace         = optional(string, "openebs")<br/>    storage_class_name        = optional(string, "openebs-lvm-instance-store-ext4")<br/>    storage_class_provisioner = optional(string, "local.csi.openebs.io")<br/>  })</pre> | `{}` | no |
 | <a name="input_enable_disk_support"></a> [enable\_disk\_support](#input\_enable\_disk\_support) | Enable disk support for Materialize using OpenEBS and local SSDs. When enabled, this configures OpenEBS, runs the disk setup script, and creates appropriate storage classes. | `bool` | `true` | no |
 | <a name="input_gke_config"></a> [gke\_config](#input\_gke\_config) | GKE cluster configuration. Make sure to use large enough machine types for your Materialize instances. | <pre>object({<br/>    node_count   = number<br/>    machine_type = string<br/>    disk_size_gb = number<br/>    min_nodes    = number<br/>    max_nodes    = number<br/>  })</pre> | <pre>{<br/>  "disk_size_gb": 100,<br/>  "machine_type": "n2-highmem-8",<br/>  "max_nodes": 2,<br/>  "min_nodes": 1,<br/>  "node_count": 1<br/>}</pre> | no |
 | <a name="input_helm_chart"></a> [helm\_chart](#input\_helm\_chart) | Chart name from repository or local path to chart. For local charts, set the path to the chart directory. | `string` | `"materialize-operator"` | no |

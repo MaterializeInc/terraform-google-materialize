@@ -31,8 +31,12 @@ This module supports configuring disk support for Materialize using local SSDs i
 When using disk support for Materialize on GCP, you need to use machine types that support local SSD attachment. Here are some recommended machine types:
 
 * [N2 series](https://cloud.google.com/compute/docs/general-purpose-machines#n2d_machine_types) with local NVMe SSDs:
-   * For memory-optimized workloads similar to AWS r7gd, consider `n2-highmem-16` or `n2-highmem-32` with local NVMe SSDs
+   * For memory-optimized workloads, consider `n2-highmem-16` or `n2-highmem-32` with local NVMe SSDs
    * Example: `n2-highmem-32` with 2 or more local SSDs
+
+* [N2D series](https://cloud.google.com/compute/docs/general-purpose-machines#n2d_machine_types) with local NVMe SSDs:
+   * For memory-optimized workloads, consider `n2d-highmem-16` or `n2d-highmem-32` with local NVMe SSDs
+   * Example: `n2d-highmem-32` with 2 or more local SSDs
 
 ### Enabling Disk Support
 
@@ -104,12 +108,3 @@ The following table helps you determine the appropriate number of local SSDs bas
 
 Remember that each local NVMe SSD in GCP provides 375GB of storage.
 Choose the appropriate `local_ssd_count` to make sure your total disk space is at least twice the amount of RAM in your machine type for optimal Materialize performance.
-
-### Local SSD Limitations in GCP
-
-Note that there are some differences between AWS NVMe instance store and GCP local SSDs:
-
-1. GCP local NVMe SSDs have a fixed size of 375 GB each
-2. Local SSDs must be attached at instance creation time
-3. The number of local SSDs you can attach depends on the machine type
-4. Data on local SSDs is lost when the instance stops or is deleted

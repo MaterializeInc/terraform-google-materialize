@@ -249,11 +249,9 @@ resource "kubernetes_daemonset" "disk_setup" {
 
           resources {
             limits = {
-              cpu    = "200m"
-              memory = "256Mi"
+              memory = "128Mi"
             }
             requests = {
-              cpu    = "100m"
               memory = "128Mi"
             }
           }
@@ -278,6 +276,11 @@ resource "kubernetes_daemonset" "disk_setup" {
             name       = "mnt"
             mount_path = "/mnt"
           }
+
+          volume_mount {
+            name       = "dev"
+            mount_path = "/dev"
+          }
         }
 
         container {
@@ -286,11 +289,9 @@ resource "kubernetes_daemonset" "disk_setup" {
 
           resources {
             limits = {
-              cpu    = "50m"
-              memory = "64Mi"
+              memory = "32Mi"
             }
             requests = {
-              cpu    = "10m"
               memory = "32Mi"
             }
           }
@@ -316,6 +317,13 @@ resource "kubernetes_daemonset" "disk_setup" {
           name = "mnt"
           host_path {
             path = "/mnt"
+          }
+        }
+
+        volume {
+          name = "dev"
+          host_path {
+            path = "/dev"
           }
         }
       }
