@@ -74,12 +74,14 @@ enable_disk_support = true
 
 gke_config = {
   node_count   = 3
-  machine_type = "n2-highmem-16"  # This machine has 128GB RAM
+  # This machine has 128GB RAM
+  machine_type = "n2-highmem-16"
   disk_size_gb = 100
   min_nodes    = 3
   max_nodes    = 5
-  local_ssd_count = 1             # This provides 1 x 375GB = 375GB of local NVMe SSD storage
-                                  # Exceeding the 2:1 disk-to-RAM ratio (128GB RAM : 375GB disk)
+  # This provides 1 x 375GB = 375GB of local NVMe SSD storage
+  # Exceeding the 2:1 disk-to-RAM ratio (128GB RAM : 375GB disk)
+  local_ssd_count = 1
 }
 
 disk_support_config = {
@@ -149,7 +151,7 @@ No resources.
 | <a name="input_cert_manager_install_timeout"></a> [cert\_manager\_install\_timeout](#input\_cert\_manager\_install\_timeout) | Timeout for installing the cert-manager helm chart, in seconds. | `number` | `300` | no |
 | <a name="input_cert_manager_namespace"></a> [cert\_manager\_namespace](#input\_cert\_manager\_namespace) | The name of the namespace in which cert-manager is or will be installed. | `string` | `"cert-manager"` | no |
 | <a name="input_database_config"></a> [database\_config](#input\_database\_config) | Cloud SQL configuration | <pre>object({<br/>    tier     = optional(string, "db-custom-2-4096")<br/>    version  = optional(string, "POSTGRES_15")<br/>    password = string<br/>    username = optional(string, "materialize")<br/>    db_name  = optional(string, "materialize")<br/>  })</pre> | n/a | yes |
-| <a name="input_disk_support_config"></a> [disk\_support\_config](#input\_disk\_support\_config) | Advanced configuration for disk support (only used when enable\_disk\_support = true) | <pre>object({<br/>    install_openebs           = optional(bool, true)<br/>    run_disk_setup_script     = optional(bool, true)<br/>    local_ssd_count           = optional(number, 1)<br/>    create_storage_class      = optional(bool, true)<br/>    openebs_version           = optional(string, "4.2.0")<br/>    openebs_namespace         = optional(string, "openebs")<br/>    storage_class_name        = optional(string, "openebs-lvm-instance-store-ext4")<br/>    storage_class_provisioner = optional(string, "local.csi.openebs.io")<br/>    storage_class_parameters = optional(object({<br/>      storage  = optional(string, "lvm")<br/>      fsType   = optional(string, "ext4")<br/>      volgroup = optional(string, "instance-store-vg")<br/>    }), {})<br/>  })</pre> | `{}` | no |
+| <a name="input_disk_support_config"></a> [disk\_support\_config](#input\_disk\_support\_config) | Advanced configuration for disk support (only used when enable\_disk\_support = true) | <pre>object({<br/>    install_openebs           = optional(bool, true)<br/>    run_disk_setup_script     = optional(bool, true)<br/>    local_ssd_count           = optional(number, 1)<br/>    create_storage_class      = optional(bool, true)<br/>    openebs_version           = optional(string, "4.2.0")<br/>    openebs_namespace         = optional(string, "openebs")<br/>    storage_class_name        = optional(string, "openebs-lvm-instance-store-ext4")<br/>    storage_class_provisioner = optional(string, "local.csi.openebs.io")<br/>    storage_class_parameters = optional(object({<br/>      storage  = optional(string, "lvm")<br/>      volgroup = optional(string, "instance-store-vg")<br/>    }), {})<br/>  })</pre> | `{}` | no |
 | <a name="input_enable_disk_support"></a> [enable\_disk\_support](#input\_enable\_disk\_support) | Enable disk support for Materialize using OpenEBS and local SSDs. When enabled, this configures OpenEBS, runs the disk setup script, and creates appropriate storage classes. | `bool` | `true` | no |
 | <a name="input_gke_config"></a> [gke\_config](#input\_gke\_config) | GKE cluster configuration. Make sure to use large enough machine types for your Materialize instances. | <pre>object({<br/>    node_count   = number<br/>    machine_type = string<br/>    disk_size_gb = number<br/>    min_nodes    = number<br/>    max_nodes    = number<br/>  })</pre> | <pre>{<br/>  "disk_size_gb": 100,<br/>  "machine_type": "n2-highmem-8",<br/>  "max_nodes": 2,<br/>  "min_nodes": 1,<br/>  "node_count": 1<br/>}</pre> | no |
 | <a name="input_helm_chart"></a> [helm\_chart](#input\_helm\_chart) | Chart name from repository or local path to chart. For local charts, set the path to the chart directory. | `string` | `"materialize-operator"` | no |

@@ -6,9 +6,9 @@ echo "Starting GCP NVMe SSD setup"
 # Install required tools
 if command -v apt-get >/dev/null 2>&1; then
   apt-get update
-  apt-get install -y lvm2
+  apt-get install -y lvm2=2.03.11-2.1
 elif command -v yum >/dev/null 2>&1; then
-  yum install -y lvm2
+  yum install -y lvm2-2.03.11-5.el9
 else
   echo "No package manager found. Please install required tools manually."
   exit 1

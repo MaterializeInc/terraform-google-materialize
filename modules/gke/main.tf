@@ -243,7 +243,7 @@ resource "kubernetes_daemonset" "disk_setup" {
 
         init_container {
           name  = "disk-setup"
-          image = "debian:bullseye-slim"
+          image = "debian:bullseye-20250407-slim"
 
           command = ["/bin/bash", "/scripts/bootstrap.sh"]
 

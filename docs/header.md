@@ -74,12 +74,14 @@ enable_disk_support = true
 
 gke_config = {
   node_count   = 3
-  machine_type = "n2-highmem-16"  # This machine has 128GB RAM
+  # This machine has 128GB RAM
+  machine_type = "n2-highmem-16"
   disk_size_gb = 100
   min_nodes    = 3
   max_nodes    = 5
-  local_ssd_count = 1             # This provides 1 x 375GB = 375GB of local NVMe SSD storage
-                                  # Exceeding the 2:1 disk-to-RAM ratio (128GB RAM : 375GB disk)
+  # This provides 1 x 375GB = 375GB of local NVMe SSD storage
+  # Exceeding the 2:1 disk-to-RAM ratio (128GB RAM : 375GB disk)
+  local_ssd_count = 1
 }
 
 disk_support_config = {

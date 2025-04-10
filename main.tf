@@ -16,7 +16,7 @@ locals {
     storage_class_provisioner = lookup(var.disk_support_config, "storage_class_provisioner", "local.csi.openebs.io")
     storage_class_parameters = {
       storage  = try(var.disk_support_config.storage_class_parameters.storage, "lvm")
-      fsType   = try(var.disk_support_config.storage_class_parameters.fsType, "ext4")
+      fsType   = "ext4"
       volgroup = try(var.disk_support_config.storage_class_parameters.volgroup, "instance-store-vg")
     }
   }

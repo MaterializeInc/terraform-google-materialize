@@ -223,7 +223,6 @@ variable "disk_support_config" {
     storage_class_provisioner = optional(string, "local.csi.openebs.io")
     storage_class_parameters = optional(object({
       storage  = optional(string, "lvm")
-      fsType   = optional(string, "ext4")
       volgroup = optional(string, "instance-store-vg")
     }), {})
   })
