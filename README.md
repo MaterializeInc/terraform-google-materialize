@@ -30,17 +30,9 @@ This module supports configuring disk support for Materialize using local SSDs i
 
 When using disk support for Materialize on GCP, you need to use machine types that support local SSD attachment. Here are some recommended machine types:
 
-1. [N2 series](https://cloud.google.com/compute/docs/general-purpose-machines#n2d_machine_types) with local SSDs:
-   - For memory-optimized workloads similar to AWS r7gd, consider `n2-highmem-16` or `n2-highmem-32` with local SSDs
-   - Example: `n2-highmem-32` with 2 or more local SSDs
-
-2. [C2 series](https://cloud.google.com/compute/docs/compute-optimized-machines#c2_machine_types) with local SSDs:
-   - For compute-optimized workloads
-   - Example: `c2-standard-16` with local SSDs
-
-3. [N2D series](https://cloud.google.com/compute/docs/general-purpose-machines#n2d_machine_types) with local SSDs:
-   - AMD EPYC-based instances, often with good price/performance ratio
-   - Example: `n2d-highmem-32` with local SSDs
+* [N2 series](https://cloud.google.com/compute/docs/general-purpose-machines#n2d_machine_types) with local NVMe SSDs:
+   * For memory-optimized workloads similar to AWS r7gd, consider `n2-highmem-16` or `n2-highmem-32` with local NVMe SSDs
+   * Example: `n2-highmem-32` with 2 or more local SSDs
 
 ### Enabling Disk Support
 
@@ -51,12 +43,18 @@ enable_disk_support = true
 
 gke_config = {
   node_count   = 3
-  machine_type = "n2-highmem-32"  # This machine has 256GB RAM
-  disk_size_gb = 100              # This is for the OS disk, not for Materialize data
+
+  # This machine has 256GB RAM
+  machine_type = "n2-highmem-32"
+
+  # This is for the OS disk, not for Materialize data
+  disk_size_gb = 100
   min_nodes    = 3
   max_nodes    = 5
-  local_ssd_count = 2             # This provides 2 x 375GB = 750GB of local SSD storage
-                                  # Exceeding the 2:1 disk-to-RAM ratio (256GB RAM : 750GB disk)
+
+  # This provides 2 x 375GB = 750GB of local SSD storage
+  # Exceeding the 2:1 disk-to-RAM ratio (256GB RAM : 750GB disk)
+  local_ssd_count = 2
 }
 ```
 
