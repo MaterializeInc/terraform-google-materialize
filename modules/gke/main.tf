@@ -1,3 +1,24 @@
+locals {
+  node_labels = merge(
+    var.labels,
+    {
+      "materialize.cloud/disk" = var.enable_disk_setup ? "true" : "false"
+      "workload"               = "materialize-instance"
+    },
+    var.enable_disk_setup ? {
+      "materialize.cloud/disk-config-required" = "true"
+    } : {}
+  )
+
+  node_taints = var.enable_disk_setup ? [
+    {
+      key    = "disk-unconfigured"
+      value  = "true"
+      effect = "NO_SCHEDULE"
+    }
+  ] : []
+}
+
 resource "google_service_account" "gke_sa" {
   project      = var.project_id
   account_id   = "${var.prefix}-gke-sa"
@@ -76,10 +97,16 @@ resource "google_container_node_pool" "primary_nodes" {
     machine_type = var.machine_type
     disk_size_gb = var.disk_size_gb
 
-    labels = merge(var.labels, {
-      "materialize.cloud/disk" = var.enable_disk_setup ? "true" : "false"
-      "workload"               = "materialize-instance"
-    })
+    labels = local.node_labels
+
+    dynamic "taint" {
+      for_each = local.node_taints
+      content {
+        key    = taint.value.key
+        value  = taint.value.value
+        effect = taint.value.effect
+      }
+    }
 
     service_account = google_service_account.gke_sa.email
 
@@ -172,23 +199,6 @@ resource "kubernetes_namespace" "disk_setup" {
   ]
 }
 
-resource "kubernetes_config_map" "disk_setup_script" {
-  count = var.enable_disk_setup ? 1 : 0
-
-  metadata {
-    name      = "disk-setup-script"
-    namespace = kubernetes_namespace.disk_setup[0].metadata[0].name
-  }
-
-  data = {
-    "bootstrap.sh" = file("${path.module}/bootstrap.sh")
-  }
-
-  depends_on = [
-    kubernetes_namespace.disk_setup
-  ]
-}
-
 resource "kubernetes_daemonset" "disk_setup" {
   count = var.enable_disk_setup ? 1 : 0
 
@@ -240,16 +250,21 @@ resource "kubernetes_daemonset" "disk_setup" {
           }
         }
 
+        toleration {
+          key      = "disk-unconfigured"
+          operator = "Exists"
+          effect   = "NoSchedule"
+        }
+
         # Use host network and PID namespace
         host_network = true
         host_pid     = true
 
         init_container {
-          name  = "disk-setup"
-          image = "debian:bullseye-20250407-slim"
-
-          command = ["/bin/bash", "/scripts/bootstrap.sh"]
-
+          name    = "disk-setup"
+          image   = var.disk_setup_image
+          command = ["/usr/local/bin/configure-disks.sh"]
+          args    = ["--cloud-provider", "gcp"]
           resources {
             limits = {
               memory = "128Mi"
@@ -266,24 +281,49 @@ resource "kubernetes_daemonset" "disk_setup" {
           }
 
           env {
-            name  = "SCRIPT_VERBOSE"
-            value = "true"
-          }
-
-          # Mount all necessary host paths
-          volume_mount {
-            name       = "scripts"
-            mount_path = "/scripts"
-          }
-
-          volume_mount {
-            name       = "mnt"
-            mount_path = "/mnt"
+            name = "NODE_NAME"
+            value_from {
+              field_ref {
+                field_path = "spec.nodeName"
+              }
+            }
           }
 
           volume_mount {
             name       = "dev"
             mount_path = "/dev"
+          }
+
+          volume_mount {
+            name       = "host-root"
+            mount_path = "/host"
+          }
+
+        }
+
+        init_container {
+          name    = "taint-management"
+          image   = var.disk_setup_image
+          command = ["/usr/local/bin/manage-taints.sh", "remove"]
+          resources {
+            limits = {
+              memory = "64Mi"
+            }
+            requests = {
+              memory = "64Mi"
+              cpu    = "10m"
+            }
+          }
+          security_context {
+            run_as_user = 0
+          }
+          env {
+            name = "NODE_NAME"
+            value_from {
+              field_ref {
+                field_path = "spec.nodeName"
+              }
+            }
           }
         }
 
@@ -311,31 +351,58 @@ resource "kubernetes_daemonset" "disk_setup" {
         }
 
         volume {
-          name = "scripts"
-          config_map {
-            name         = kubernetes_config_map.disk_setup_script[0].metadata[0].name
-            default_mode = "0755"
-          }
-        }
-
-        volume {
-          name = "mnt"
-          host_path {
-            path = "/mnt"
-          }
-        }
-
-        volume {
           name = "dev"
           host_path {
             path = "/dev"
           }
         }
+
+        volume {
+          name = "host-root"
+          host_path {
+            path = "/"
+          }
+        }
+
+        service_account_name = kubernetes_service_account.disk_setup[0].metadata[0].name
       }
     }
   }
+}
 
-  depends_on = [
-    kubernetes_config_map.disk_setup_script
-  ]
+resource "kubernetes_service_account" "disk_setup" {
+  count = var.enable_disk_setup ? 1 : 0
+  metadata {
+    name      = "disk-setup"
+    namespace = kubernetes_namespace.disk_setup[0].metadata[0].name
+  }
+}
+
+resource "kubernetes_cluster_role" "disk_setup" {
+  count = var.enable_disk_setup ? 1 : 0
+  metadata {
+    name = "disk-setup"
+  }
+  rule {
+    api_groups = [""]
+    resources  = ["nodes"]
+    verbs      = ["get", "patch"]
+  }
+}
+
+resource "kubernetes_cluster_role_binding" "disk_setup" {
+  count = var.enable_disk_setup ? 1 : 0
+  metadata {
+    name = "disk-setup"
+  }
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "ClusterRole"
+    name      = kubernetes_cluster_role.disk_setup[0].metadata[0].name
+  }
+  subject {
+    kind      = "ServiceAccount"
+    name      = kubernetes_service_account.disk_setup[0].metadata[0].name
+    namespace = kubernetes_namespace.disk_setup[0].metadata[0].name
+  }
 }
