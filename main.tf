@@ -56,6 +56,7 @@ module "gke" {
   install_openebs   = local.disk_config.install_openebs
   openebs_namespace = local.disk_config.openebs_namespace
   openebs_version   = local.disk_config.openebs_version
+  disk_setup_image  = var.disk_setup_image
 
   namespace = var.namespace
   labels    = local.common_labels

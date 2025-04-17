@@ -66,7 +66,7 @@ This configuration:
 1. Attaches two local SSDs to each node, providing 750GB of storage per node
 2. Ensures the disk-to-RAM ratio is greater than 2:1 for the n2-highmem-32 instance (which has 256GB RAM)
 3. Installs OpenEBS via Helm to manage these local SSDs
-4. Configures local NVMe SSD devices using the [bootstrap](./modules/gke/bootstrap.sh) script
+4. Configures local NVMe SSD devices using the [bootstrap Docker image](https://github.com/MaterializeInc/ephemeral-storage-setup-imageh)
 5. Creates appropriate storage classes for Materialize
 
 ### Advanced Configuration Example

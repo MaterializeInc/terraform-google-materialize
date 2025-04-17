@@ -89,3 +89,8 @@ variable "openebs_version" {
   type        = string
   default     = "4.2.0"
 }
+
+variable "disk_setup_image" {
+  description = "Docker image for the disk setup script"
+  type        = string
+}
