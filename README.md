@@ -32,39 +32,53 @@ When using disk support for Materialize on GCP, you need to use machine types th
 
 * [N2 series](https://cloud.google.com/compute/docs/general-purpose-machines#n2d_machine_types) with local NVMe SSDs:
    * For memory-optimized workloads, consider `n2-highmem-16` or `n2-highmem-32` with local NVMe SSDs
-   * Example: `n2-highmem-32` with 2 or more local SSDs
+   * Example: `n2-highmem-32` with 4 or more local SSDs
 
 * [N2D series](https://cloud.google.com/compute/docs/general-purpose-machines#n2d_machine_types) with local NVMe SSDs:
    * For memory-optimized workloads, consider `n2d-highmem-16` or `n2d-highmem-32` with local NVMe SSDs
    * Example: `n2d-highmem-32` with 2 or more local SSDs
 
+> [!NOTE] Your machine type may only support predefined number of local SSD
+> disks. For instance, `n2d-highmem-32`
+> only accepts `2`, `4`, `8`, `16`, or `24`. To determine the number of
+> Local SSD disks to attach, see the [GCP
+> documentation](https://cloud.google.com/compute/docs/disks/local-ssd#lssd_disk_options).
+
 ### Enabling Disk Support
 
-To enable disk support with default settings in your Terraform configuration:
+By default, the module enables disk support. The default setting used by the Terraform module:
 
 ```hcl
 enable_disk_support = true
 
 gke_config = {
-  node_count   = 3
+  node_count   = 1
 
-  # This machine has 256GB RAM
-  machine_type = "n2-highmem-32"
+  # This machine has 64GB RAM
+  machine_type = "n2-highmem-8"
 
   # This is for the OS disk, not for Materialize data
   disk_size_gb = 100
-  min_nodes    = 3
-  max_nodes    = 5
+  min_nodes    = 1
+  max_nodes    = 2
+}
 
-  # This provides 2 x 375GB = 750GB of local SSD storage
-  # Exceeding the 2:1 disk-to-RAM ratio (256GB RAM : 750GB disk)
-  local_ssd_count = 2
+disk_support_config = {
+  install_openebs = true
+  run_disk_setup_script = true
+  # Each local NVMe SSD in GCP provides 375GB of storage.
+  # local_ssd_count = 1 provides 1 x 375GB = 375GB of local SSD storage
+  # Meeting/exceeding the minimum recommended 2:1 disk-to-RAM ratio (375GB disk:64GB RAM)
+  local_ssd_count = 1
+  create_storage_class = true
+  openebs_version ="4.2.0"
+  openebs_namespace = "openebs"
+  storage_class_name = "openebs-lvm-instance-store-ext4"
 }
 ```
 
 This configuration:
-1. Attaches two local SSDs to each node, providing 750GB of storage per node
-2. Ensures the disk-to-RAM ratio is greater than 2:1 for the n2-highmem-32 instance (which has 256GB RAM)
+1. Attaches one local SSD to each node, providing 375GB of storage per node. This ensures that the disk-to-RAM ratio is greater than the minimum 2:1 for the `n2-highmem-8` instance (which has 64GB RAM)
 3. Installs OpenEBS via Helm to manage these local SSDs
 4. Configures local NVMe SSD devices using the [bootstrap](./modules/gke/bootstrap.sh) script
 5. Creates appropriate storage classes for Materialize
@@ -78,27 +92,34 @@ enable_disk_support = true
 
 gke_config = {
   node_count   = 3
-  # This machine has 128GB RAM
-  machine_type = "n2-highmem-16"
-  disk_size_gb = 100
+  # This machine has 256GB RAM
+  machine_type = "n2d-highmem-32"
+  disk_size_gb = 100 // This is for the OS disk, not for Materialize data
   min_nodes    = 3
   max_nodes    = 5
-  # This provides 1 x 375GB = 375GB of local NVMe SSD storage
-  # Exceeding the 2:1 disk-to-RAM ratio (128GB RAM : 375GB disk)
-  local_ssd_count = 1
 }
 
 disk_support_config = {
   openebs_version    = "4.2.0"
   storage_class_name = "custom-storage-class"
+  # Each local NVMe SSD in GCP provides 375GB of storage.
+  # local_ssd_count provides 2 x 375GB = 750GB of local NVMe SSD storage per node.
+  # Meets/exceeds the minimum 2:1 disk-to-RAM ratio (750GB disk: 256GB RAM)
+  local_ssd_count = 2 //
 }
 ```
 
 ### Calculating the Right Number of Local SSDs
 
 The following table helps you determine the appropriate number of local SSDs based on your chosen machine type to maintain the recommended 2:1 disk-to-RAM ratio:
+> [!NOTE] The table below specifies a minimum number of local SSDs needed to
+> meet the 2:1 ratio. However, your machine type may only support predefined
+> number of local SSD. For instance, `n2-highmem-32`
+> only accepts `4`, `8`, `16`, or `24`. To determine the valid number of
+> Local SSD disks to attach for your machine type, see the [GCP
+> documentation](https://cloud.google.com/compute/docs/disks/local-ssd#lssd_disk_options).
 
-| Machine Type    | RAM     | Required Disk | Recommended Local SSD Count | Total SSD Storage |
+| Machine Type    | RAM     | Required Disk | Minimum Local SSD Count | Total SSD Storage |
 |-----------------|---------|---------------|-----------------------------|-------------------|
 | `n2-highmem-8`  | `64GB`  | `128GB`       | 1                           | `375GB`           |
 | `n2-highmem-16` | `128GB` | `256GB`       | 1                           | `375GB`           |
