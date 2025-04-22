@@ -67,7 +67,6 @@ module "database" {
 
   depends_on = [
     module.networking,
-    module.gke
   ]
 
   database_name = var.database_config.db_name
