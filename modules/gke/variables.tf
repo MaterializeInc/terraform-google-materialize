@@ -23,6 +23,21 @@ variable "subnet_name" {
   type        = string
 }
 
+variable "network_id" {
+  description = "The ID of the VPC network"
+  type        = string
+}
+
+variable "pods_cidr" {
+  description = "The CIDR block for pods"
+  type        = string
+}
+
+variable "services_cidr" {
+  description = "The CIDR block for services"
+  type        = string
+}
+
 variable "node_count" {
   description = "Number of nodes in the GKE cluster"
   type        = number

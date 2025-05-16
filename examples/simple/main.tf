@@ -54,11 +54,12 @@ module "materialize" {
   region     = var.region
   prefix     = var.prefix
 
-  network_config = {
-    subnet_cidr   = "10.0.0.0/20"
-    pods_cidr     = "10.48.0.0/14"
-    services_cidr = "10.52.0.0/20"
-  }
+  # Existing network inputs
+  network_name  = var.network_name
+  subnet_name   = var.subnet_name
+  network_id    = var.network_id
+  pods_cidr     = var.pods_cidr
+  services_cidr = var.services_cidr
 
   database_config = {
     tier     = "db-custom-2-4096"
@@ -105,6 +106,31 @@ variable "prefix" {
   default     = "mz-simple"
 }
 
+variable "network_name" {
+  description = "Name of the existing VPC network to use"
+  type        = string
+}
+
+variable "subnet_name" {
+  description = "Name of the existing subnet to use"
+  type        = string
+}
+
+variable "network_id" {
+  description = "ID of the existing VPC network"
+  type        = string
+}
+
+variable "pods_cidr" {
+  description = "CIDR block for pods"
+  type        = string
+}
+
+variable "services_cidr" {
+  description = "CIDR block for services"
+  type        = string
+}
+
 resource "random_password" "pass" {
   length  = 20
   special = false
@@ -138,10 +164,10 @@ variable "operator_version" {
   default     = null
 }
 
-output "network" {
-  description = "Network details"
-  value       = module.materialize.network
-}
+# output "network" {
+#   description = "Network details"
+#   value       = module.materialize.network
+# }
 
 variable "orchestratord_version" {
   description = "Version of the Materialize orchestrator to install"
