@@ -113,7 +113,7 @@ module "certificates" {
 }
 
 module "operator" {
-  source = "github.com/MaterializeInc/terraform-helm-materialize?ref=v0.1.14"
+  source = "github.com/MaterializeInc/terraform-helm-materialize?ref=v0.1.15"
 
   count = var.install_materialize_operator ? 1 : 0
 
@@ -233,6 +233,9 @@ locals {
       create_load_balancer   = instance.create_load_balancer
       internal_load_balancer = instance.internal_load_balancer
       environmentd_version   = instance.environmentd_version
+
+      environmentd_extra_env  = instance.environmentd_extra_env
+      environmentd_extra_args = instance.environmentd_extra_args
 
       metadata_backend_url = format(
         "postgres://%s:%s@%s:5432/%s?sslmode=disable",
