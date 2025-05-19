@@ -130,6 +130,39 @@ The following table helps you determine the appropriate number of local SSDs bas
 Remember that each local NVMe SSD in GCP provides 375GB of storage.
 Choose the appropriate `local_ssd_count` to make sure your total disk space is at least twice the amount of RAM in your machine type for optimal Materialize performance.
 
+## `materialize_instances` variable
+
+The `materialize_instances` variable is a list of objects that define the configuration for each Materialize instance.
+
+### `environmentd_extra_env`
+
+Optional list of extra environment variables to pass to the `environmentd` container. This allows you to pass any additional configuration supported by Materialize.
+
+Each entry should be an object with `name` and `value` fields:
+
+```hcl
+environmentd_extra_env = [
+  {
+    name  = "MZ_LOG_FILTER"
+    value = "materialized::coord=debug"
+  }
+]
+```
+
+### `environmentd_extra_args`
+
+Optional list of additional command-line arguments to pass to the `environmentd` container. This can be used to override default system parameters or enable specific features.
+
+```hcl
+environmentd_extra_args = [
+  "--system-parameter-default=max_clusters=1000",
+  "--system-parameter-default=max_connections=1000",
+  "--system-parameter-default=max_tables=1000",
+]
+```
+
+These flags configure default limits for clusters, connections, and tables. You can provide any supported arguments [here](https://materialize.com/docs/sql/alter-system-set/#other-configuration-parameters).
+
 ## Requirements
 
 | Name | Version |
