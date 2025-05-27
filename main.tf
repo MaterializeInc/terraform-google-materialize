@@ -234,7 +234,6 @@ locals {
       internal_load_balancer = instance.internal_load_balancer
       environmentd_version   = instance.environmentd_version
 
-      environmentd_extra_env  = instance.environmentd_extra_env
       environmentd_extra_args = instance.environmentd_extra_args
 
       metadata_backend_url = format(
