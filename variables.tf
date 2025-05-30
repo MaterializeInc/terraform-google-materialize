@@ -60,8 +60,8 @@ variable "gke_config" {
   })
   default = {
     node_count   = 1
-    machine_type = "n2-highmem-8"
-    disk_size_gb = 100
+    machine_type = "n2-standard-2"
+    disk_size_gb = 50
     min_nodes    = 1
     max_nodes    = 2
   }

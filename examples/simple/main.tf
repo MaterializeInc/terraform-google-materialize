@@ -61,6 +61,8 @@ module "materialize" {
   pods_cidr     = var.pods_cidr
   services_cidr = var.services_cidr
 
+  gke_config = var.gke_config
+
   database_config = {
     tier     = "db-custom-2-4096"
     version  = "POSTGRES_15"
@@ -209,4 +211,22 @@ variable "use_self_signed_cluster_issuer" {
   description = "Whether to install and use a self-signed ClusterIssuer for TLS. To work around limitations in Terraform, this will be treated as `false` if no materialize instances are defined."
   type        = bool
   default     = true
+}
+
+variable "gke_config" {
+  description = "GKE cluster configuration"
+  type = object({
+    node_count   = number
+    machine_type = string
+    disk_size_gb = number
+    min_nodes    = number
+    max_nodes    = number
+  })
+  default = {
+    node_count   = 1
+    machine_type = "n2-standard-2"
+    disk_size_gb = 50
+    min_nodes    = 1
+    max_nodes    = 2
+  }
 }
