@@ -1,0 +1,39 @@
+project_id = "enter-your-gcp-project-id"
+prefix  = "enter-a-prefix" // e.g., mz-simple, my-mz-demo
+region = "us-central1"
+
+# Network configuration
+network_config = {
+  subnet_cidr   = "10.0.0.0/20"
+  pods_cidr     = "10.48.0.0/14"
+  services_cidr = "10.52.0.0/20"
+}
+
+# Existing network inputs
+network_name = "default"
+subnet_name  = "default"
+network_id   = "projects/staging-383416/global/networks/default"
+pods_cidr      = "10.1.0.0/16"
+services_cidr  = "10.2.0.0/20"
+
+# Once the operator is installed, you can define your Materialize instances here.
+# Uncomment the following block (or provide your own instances) to configure them:
+
+# materialize_instances = [
+#   {
+#     name           = "analytics"
+#     namespace      = "materialize-environment"
+#     database_name  = "analytics_db"
+#     cpu_request    = "2"
+#     memory_request = "4Gi"
+#     memory_limit   = "4Gi"
+#   },
+#   {
+#     name           = "demo"
+#     namespace      = "materialize-environment"
+#     database_name  = "demo_db"
+#     cpu_request    = "2"
+#     memory_request = "4Gi"
+#     memory_limit   = "4Gi"
+#   }
+# ]
