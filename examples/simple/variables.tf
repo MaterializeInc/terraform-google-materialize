@@ -22,6 +22,11 @@ variable "network_config" {
     pods_cidr     = string
     services_cidr = string
   })
+  default = {
+    subnet_cidr   = "10.0.0.0/20"
+    pods_cidr     = "10.48.0.0/14"
+    services_cidr = "10.52.0.0/20"
+  }
 }
 
 variable "gke_config" {
@@ -47,14 +52,15 @@ variable "database_config" {
   type = object({
     tier     = optional(string, "db-custom-2-4096")
     version  = optional(string, "POSTGRES_15")
-    password = string
     username = optional(string, "materialize")
     db_name  = optional(string, "materialize")
   })
 
-  validation {
-    condition     = var.database_config.password != null
-    error_message = "database_config.password must be provided"
+  default = {
+    tier     = "db-custom-2-4096"
+    version  = "POSTGRES_15" 
+    username = "materialize"
+    db_name  = "materialize"
   }
 }
 
@@ -93,12 +99,6 @@ variable "helm_values" {
   description = "Values to pass to the Helm chart"
   type        = any
   default     = {}
-}
-
-variable "orchestratord_version" {
-  description = "Version of the Materialize orchestrator to install"
-  type        = string
-  default     = null
 }
 
 variable "materialize_instances" {
@@ -144,8 +144,16 @@ variable "materialize_instances" {
   }
 }
 
+
 variable "operator_version" {
   description = "Version of the Materialize operator to install"
+  type        = string
+  default     = "v25.1.12" # META: helm-chart version
+  nullable    = false
+}
+
+variable "orchestratord_version" {
+  description = "Version of the Materialize orchestrator to install"
   type        = string
   default     = null
 }
