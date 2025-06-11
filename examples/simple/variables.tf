@@ -43,7 +43,7 @@ variable "gke_config" {
     machine_type = "n2-highmem-8"
     disk_size_gb = 100
     min_nodes    = 1
-    max_nodes    = 2
+    max_nodes    = 5
   }
 }
 
