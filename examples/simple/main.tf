@@ -67,25 +67,43 @@ module "gke" {
   prefix       = var.prefix
   network_name = module.networking.network_name
   subnet_name  = module.networking.subnet_name
-
-  node_count   = var.gke_config.node_count
-  machine_type = var.gke_config.machine_type
-  disk_size_gb = var.gke_config.disk_size_gb
-  min_nodes    = var.gke_config.min_nodes
-  max_nodes    = var.gke_config.max_nodes
-
-  # Disk support configuration
-  enable_disk_setup = local.disk_config.run_disk_setup_script
-  local_ssd_count   = local.disk_config.local_ssd_count
-  install_openebs   = local.disk_config.install_openebs
-  openebs_namespace = local.disk_config.openebs_namespace
-  openebs_version   = local.disk_config.openebs_version
-  disk_setup_image  = var.disk_setup_image
-
   namespace = var.namespace
-  labels    = local.common_labels
 }
 
+
+module "nodepool" {
+  source = "../../modules/nodepool"
+  depends_on = [module.gke]
+  
+  nodepool_name = "${var.prefix}-node-pool"
+  region = var.region
+  enable_private_nodes = true
+  cluster_name = module.gke.cluster_name
+  project_id = var.project_id
+  node_count = var.gke_config.node_count
+  min_nodes = var.gke_config.min_nodes
+  max_nodes = var.gke_config.max_nodes
+  machine_type = var.gke_config.machine_type
+  disk_size_gb = var.gke_config.disk_size_gb
+  service_account_email = module.gke.service_account_email
+  labels = local.common_labels
+
+  disk_setup_image = var.disk_setup_image
+  enable_disk_setup = local.disk_config.run_disk_setup_script
+}
+
+module "openebs" {
+  source = "../../modules/openebs"
+  depends_on = [
+    module.gke,
+    module.nodepool
+  ]
+
+  install_openebs = local.disk_config.install_openebs
+  create_namespace = true
+  openebs_namespace = local.disk_config.openebs_namespace
+  openebs_version = local.disk_config.openebs_version
+}
 
 resource "random_password" "database_password" {
   length  = 20
