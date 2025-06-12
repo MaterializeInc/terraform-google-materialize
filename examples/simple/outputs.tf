@@ -49,7 +49,7 @@ locals {
   metadata_backend_url = format(
     "postgres://%s:%s@%s:5432/%s?sslmode=disable",
     var.database_config.username,
-    var.database_config.password,
+    random_password.database_password.result,
     module.database.private_ip,
     var.database_config.db_name
   )
