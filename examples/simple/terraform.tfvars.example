@@ -14,12 +14,14 @@ network_config = {
 
 # materialize_instances = [
 #   {
-#     name           = "analytics"
-#     namespace      = "materialize-environment"
-#     database_name  = "analytics_db"
-#     cpu_request    = "2"
-#     memory_request = "4Gi"
-#     memory_limit   = "4Gi"
+#     name                              = "analytics"
+#     namespace                         = "materialize-environment"
+#     database_name                     = "analytics_db"
+#     cpu_request                       = "2"
+#     memory_request                    = "4Gi"
+#     memory_limit                      = "4Gi"
+#     authenticator_kind                = "Password"
+#     external_login_password_mz_system = "your-password"
 #   },
 #   {
 #     name           = "demo"

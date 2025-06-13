@@ -104,24 +104,26 @@ variable "orchestratord_version" {
 variable "materialize_instances" {
   description = "Configuration for Materialize instances"
   type = list(object({
-    name                    = string
-    namespace               = optional(string)
-    database_name           = string
-    create_database         = optional(bool, true)
-    create_load_balancer    = optional(bool, true)
-    internal_load_balancer  = optional(bool, true)
-    environmentd_version    = optional(string)
-    cpu_request             = optional(string, "1")
-    memory_request          = optional(string, "1Gi")
-    memory_limit            = optional(string, "1Gi")
-    in_place_rollout        = optional(bool, false)
-    request_rollout         = optional(string)
-    force_rollout           = optional(string)
-    balancer_memory_request = optional(string, "256Mi")
-    balancer_memory_limit   = optional(string, "256Mi")
-    balancer_cpu_request    = optional(string, "100m")
-    license_key             = optional(string)
-    environmentd_extra_args = optional(list(string), [])
+    name                              = string
+    namespace                         = optional(string)
+    database_name                     = string
+    create_database                   = optional(bool, true)
+    create_load_balancer              = optional(bool, true)
+    internal_load_balancer            = optional(bool, true)
+    environmentd_version              = optional(string)
+    cpu_request                       = optional(string, "1")
+    memory_request                    = optional(string, "1Gi")
+    memory_limit                      = optional(string, "1Gi")
+    in_place_rollout                  = optional(bool, false)
+    request_rollout                   = optional(string)
+    force_rollout                     = optional(string)
+    balancer_memory_request           = optional(string, "256Mi")
+    balancer_memory_limit             = optional(string, "256Mi")
+    balancer_cpu_request              = optional(string, "100m")
+    license_key                       = optional(string)
+    authenticator_kind                = optional(string, "None")
+    external_login_password_mz_system = optional(string)
+    environmentd_extra_args           = optional(list(string), [])
   }))
   default = []
 
