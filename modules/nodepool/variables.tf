@@ -9,7 +9,7 @@ variable "region" {
 }
 
 variable "enable_disk_setup" {
-  description = "Whether to enable disk setup"
+  description = "Whether to enable the local NVMe SSD disks setup script for NVMe storage"
   type        = bool
   default     = true
 }
@@ -60,25 +60,15 @@ variable "labels" {
   default     = {}
 }
 
-variable "taints" {
-  description = "Taints to apply to the nodes"
-  type = list(object({
-    key    = string
-    value  = string
-    effect = string
-  }))
-  default = []
-}
-
 variable "service_account_email" {
   description = "The email of the service account to use for the nodes"
   type        = string
 }
 
 variable "local_ssd_count" {
-  description = "The number of local SSD disks to attach to each node"
+  description = "Number of local NVMe SSDs to attach to each node. In GCP, each disk is 375GB. For Materialize, you need to have a 1:2 ratio of disk to memory. If you have 8 CPUs and 64GB of memory, you need 128GB of disk. This means you need at least 1 local NVMe SSD. If you go with a larger machine type, you can increase the number of local NVMe SSDs."
   type        = number
-  default     = 0
+  default     = 1
 }
 
 variable "enable_private_nodes" {

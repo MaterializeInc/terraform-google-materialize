@@ -90,6 +90,7 @@ module "nodepool" {
 
   disk_setup_image = var.disk_setup_image
   enable_disk_setup = local.disk_config.run_disk_setup_script
+  local_ssd_count = local.disk_config.local_ssd_count
 }
 
 module "openebs" {
@@ -157,6 +158,7 @@ module "certificates" {
 
   depends_on = [
     module.gke,
+    module.nodepool,
   ]
 }
 
@@ -169,6 +171,7 @@ module "operator" {
 
   depends_on = [
     module.gke,
+    module.nodepool,
     module.database,
     module.storage,
     module.certificates,
@@ -206,6 +209,7 @@ module "load_balancers" {
   depends_on = [
     module.operator,
     module.gke,
+    module.nodepool,
   ]
 }
 

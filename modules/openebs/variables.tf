@@ -1,5 +1,5 @@
 variable "install_openebs" {
-  description = "Whether to install OpenEBS or not"
+  description = "Whether to install OpenEBS for NVMe storage"
   type        = bool
   default     = true
 }
