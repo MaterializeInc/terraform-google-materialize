@@ -44,6 +44,26 @@ locals {
       volgroup = "instance-store-vg"
     }
   }
+
+  metadata_backend_url = format(
+    "postgres://%s:%s@%s:5432/%s?sslmode=disable",
+    var.database_config.username,
+    random_password.database_password.result,
+    module.database.private_ip,
+    var.database_config.db_name
+  )
+
+  encoded_endpoint = urlencode("https://storage.googleapis.com")
+  encoded_secret   = urlencode(module.storage.hmac_secret)
+
+  persist_backend_url = format(
+    "s3://%s:%s@%s/materialize?endpoint=%s&region=%s",
+    module.storage.hmac_access_id,
+    local.encoded_secret,
+    module.storage.bucket_name,
+    local.encoded_endpoint,
+    var.region
+  )
 }
 
 module "networking" {
@@ -152,7 +172,7 @@ module "certificates" {
   install_cert_manager           = var.install_cert_manager
   cert_manager_install_timeout   = var.cert_manager_install_timeout
   cert_manager_chart_version     = var.cert_manager_chart_version
-  use_self_signed_cluster_issuer = var.use_self_signed_cluster_issuer && length(var.materialize_instances) > 0
+  use_self_signed_cluster_issuer = var.install_materialize_instance
   cert_manager_namespace         = var.cert_manager_namespace
   name_prefix                    = var.prefix
 
@@ -163,11 +183,12 @@ module "certificates" {
 }
 
 module "operator" {
-  source = "github.com/MaterializeInc/terraform-helm-materialize?ref=v0.1.15"
-
   count = var.install_materialize_operator ? 1 : 0
+  source = "../../modules/operator"
 
-  install_metrics_server = var.install_metrics_server
+  name_prefix                    = var.prefix
+  use_self_signed_cluster_issuer = var.install_materialize_instance
+  region = var.region
 
   depends_on = [
     module.gke,
@@ -176,145 +197,39 @@ module "operator" {
     module.storage,
     module.certificates,
   ]
-
-  namespace          = var.namespace
-  environment        = var.prefix
-  operator_version   = var.operator_version
-  operator_namespace = var.operator_namespace
-
-  helm_values = local.merged_helm_values
-
-  instances = local.instances
-
-  // For development purposes, you can use a local Helm chart instead of fetching it from the Helm repository
-  use_local_chart = var.use_local_chart
-  helm_chart      = var.helm_chart
-
-  providers = {
-    kubernetes = kubernetes
-    helm       = helm
-  }
 }
 
-module "load_balancers" {
-  source = "../../modules/load_balancers"
+module "materialize_instance" {
+  count = var.install_materialize_instance ? 1 : 0
 
-  for_each = { for idx, instance in local.instances : instance.name => instance if lookup(instance, "create_load_balancer", false) }
-
-  instance_name = each.value.name
-  namespace     = module.operator[0].materialize_instances[each.value.name].namespace
-  resource_id   = module.operator[0].materialize_instance_resource_ids[each.value.name]
-  internal      = each.value.internal_load_balancer
+  source               = "../../modules/materialize-instance"
+  instance_name        = "main"
+  instance_namespace   = "materialize-environment"
+  metadata_backend_url = local.metadata_backend_url
+  persist_backend_url  = local.persist_backend_url
 
   depends_on = [
-    module.operator,
     module.gke,
+    module.database,
+    module.storage,
+    module.networking,
+    module.certificates,
+    module.operator,
     module.nodepool,
+    module.openebs,
   ]
 }
 
-locals {
-  default_helm_values = {
-    observability = {
-      podMetrics = {
-        enabled = true
-      }
-    }
-    operator = {
-      image = var.orchestratord_version == null ? {} : {
-        tag = var.orchestratord_version
-      },
-      cloudProvider = {
-        type   = "gcp"
-        region = var.region
-        providers = {
-          gcp = {
-            enabled = true
-          }
-        }
-      }
-    }
-    storage = var.enable_disk_support ? {
-      storageClass = {
-        create      = local.disk_config.create_storage_class
-        name        = local.disk_config.storage_class_name
-        provisioner = local.disk_config.storage_class_provisioner
-        parameters  = local.disk_config.storage_class_parameters
-      }
-    } : {}
-    tls = (var.use_self_signed_cluster_issuer && length(var.materialize_instances) > 0) ? {
-      defaultCertificateSpecs = {
-        balancerdExternal = {
-          dnsNames = [
-            "balancerd",
-          ]
-          issuerRef = {
-            name = module.certificates.cluster_issuer_name
-            kind = "ClusterIssuer"
-          }
-        }
-        consoleExternal = {
-          dnsNames = [
-            "console",
-          ]
-          issuerRef = {
-            name = module.certificates.cluster_issuer_name
-            kind = "ClusterIssuer"
-          }
-        }
-        internal = {
-          issuerRef = {
-            name = module.certificates.cluster_issuer_name
-            kind = "ClusterIssuer"
-          }
-        }
-      }
-    } : {}
-  }
+module "load_balancers" {
+  count = var.install_materialize_instance ? 1 : 0
 
-  merged_helm_values = merge(local.default_helm_values, var.helm_values)
-}
+  source = "../../modules/load_balancers"
 
-locals {
-  instances = [
-    for instance in var.materialize_instances : {
-      name                   = instance.name
-      namespace              = instance.namespace
-      database_name          = instance.database_name
-      create_database        = instance.create_database
-      create_load_balancer   = instance.create_load_balancer
-      internal_load_balancer = instance.internal_load_balancer
-      environmentd_version   = instance.environmentd_version
+  instance_name = "main"
+  namespace     = "materialize-environment"
+  resource_id   = module.materialize_instance[0].instance_resource_id
 
-      environmentd_extra_args = instance.environmentd_extra_args
-
-      metadata_backend_url = format(
-        "postgres://%s:%s@%s:5432/%s?sslmode=disable",
-        var.database_config.username,
-        urlencode(random_password.database_password.result),
-        module.database.private_ip,
-        coalesce(instance.database_name, instance.name)
-      )
-
-      persist_backend_url = format(
-        "s3://%s:%s@%s/materialize?endpoint=%s&region=%s",
-        module.storage.hmac_access_id,
-        local.encoded_secret,
-        module.storage.bucket_name,
-        local.encoded_endpoint,
-        var.region
-      )
-
-      license_key = instance.license_key
-
-      cpu_request    = instance.cpu_request
-      memory_request = instance.memory_request
-      memory_limit   = instance.memory_limit
-
-      # Rollout options
-      in_place_rollout = instance.in_place_rollout
-      request_rollout  = instance.request_rollout
-      force_rollout    = instance.force_rollout
-    }
+  depends_on = [
+    module.materialize_instance,
   ]
 }

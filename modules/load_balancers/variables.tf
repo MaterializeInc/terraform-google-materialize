@@ -16,4 +16,5 @@ variable "resource_id" {
 variable "internal" {
   description = "Whether the load balancer is internal to the VPC."
   type        = bool
+  default     = true
 }

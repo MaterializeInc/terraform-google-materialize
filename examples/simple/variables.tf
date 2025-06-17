@@ -101,49 +101,11 @@ variable "helm_values" {
   default     = {}
 }
 
-variable "materialize_instances" {
-  description = "Configuration for Materialize instances"
-  type = list(object({
-    name                    = string
-    namespace               = optional(string)
-    database_name           = string
-    create_database         = optional(bool, true)
-    create_load_balancer    = optional(bool, true)
-    internal_load_balancer  = optional(bool, true)
-    environmentd_version    = optional(string)
-    cpu_request             = optional(string, "1")
-    memory_request          = optional(string, "1Gi")
-    memory_limit            = optional(string, "1Gi")
-    in_place_rollout        = optional(bool, false)
-    request_rollout         = optional(string)
-    force_rollout           = optional(string)
-    balancer_memory_request = optional(string, "256Mi")
-    balancer_memory_limit   = optional(string, "256Mi")
-    balancer_cpu_request    = optional(string, "100m")
-    license_key             = optional(string)
-    environmentd_extra_args = optional(list(string), [])
-  }))
-  default = []
-
-  validation {
-    condition = alltrue([
-      for instance in var.materialize_instances :
-      instance.request_rollout == null ||
-      can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", instance.request_rollout))
-    ])
-    error_message = "Request rollout must be a valid UUID in the format xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-  }
-
-  validation {
-    condition = alltrue([
-      for instance in var.materialize_instances :
-      instance.force_rollout == null ||
-      can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", instance.force_rollout))
-    ])
-    error_message = "Force rollout must be a valid UUID in the format xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-  }
+variable "install_materialize_instance" {
+  description = "Whether to install the Materialize instance. Default is false as it requires the Kubernetes cluster to be created first."
+  type        = bool
+  default     = false
 }
-
 
 variable "operator_version" {
   description = "Version of the Materialize operator to install"
