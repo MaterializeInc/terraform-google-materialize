@@ -45,28 +45,6 @@ output "service_accounts" {
   }
 }
 
-locals {
-  metadata_backend_url = format(
-    "postgres://%s:%s@%s:5432/%s?sslmode=disable",
-    var.database_config.username,
-    var.database_config.password,
-    module.database.private_ip,
-    var.database_config.db_name
-  )
-
-  encoded_endpoint = urlencode("https://storage.googleapis.com")
-  encoded_secret   = urlencode(module.storage.hmac_secret)
-
-  persist_backend_url = format(
-    "s3://%s:%s@%s/materialize?endpoint=%s&region=%s",
-    module.storage.hmac_access_id,
-    local.encoded_secret,
-    module.storage.bucket_name,
-    local.encoded_endpoint,
-    var.region
-  )
-}
-
 output "connection_strings" {
   description = "Formatted connection strings for Materialize"
   value = {
@@ -82,8 +60,18 @@ output "operator" {
     namespace             = module.operator[0].operator_namespace
     release_name          = module.operator[0].operator_release_name
     release_status        = module.operator[0].operator_release_status
-    instances             = module.operator[0].materialize_instances
-    instance_resource_ids = module.operator[0].materialize_instance_resource_ids
+  } : null
+}
+
+output "materialize_instance" {
+  description = "Materialize instance details"
+  sensitive = true
+  value = var.install_materialize_instance ? {
+    name = module.materialize_instance[0].instance_name
+    namespace = module.materialize_instance[0].instance_namespace
+    resource_id = module.materialize_instance[0].instance_resource_id
+    metadata_backend_url = module.materialize_instance[0].metadata_backend_url
+    persist_backend_url = module.materialize_instance[0].persist_backend_url
   } : null
 }
 

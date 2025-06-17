@@ -22,6 +22,11 @@ variable "network_config" {
     pods_cidr     = string
     services_cidr = string
   })
+  default = {
+    subnet_cidr   = "10.0.0.0/20"
+    pods_cidr     = "10.48.0.0/14"
+    services_cidr = "10.52.0.0/20"
+  }
 }
 
 variable "gke_config" {
@@ -38,7 +43,7 @@ variable "gke_config" {
     machine_type = "n2-highmem-8"
     disk_size_gb = 100
     min_nodes    = 1
-    max_nodes    = 2
+    max_nodes    = 5
   }
 }
 
@@ -47,14 +52,15 @@ variable "database_config" {
   type = object({
     tier     = optional(string, "db-custom-2-4096")
     version  = optional(string, "POSTGRES_15")
-    password = string
     username = optional(string, "materialize")
     db_name  = optional(string, "materialize")
   })
 
-  validation {
-    condition     = var.database_config.password != null
-    error_message = "database_config.password must be provided"
+  default = {
+    tier     = "db-custom-2-4096"
+    version  = "POSTGRES_15" 
+    username = "materialize"
+    db_name  = "materialize"
   }
 }
 
@@ -95,57 +101,21 @@ variable "helm_values" {
   default     = {}
 }
 
-variable "orchestratord_version" {
-  description = "Version of the Materialize orchestrator to install"
-  type        = string
-  default     = null
-}
-
-variable "materialize_instances" {
-  description = "Configuration for Materialize instances"
-  type = list(object({
-    name                    = string
-    namespace               = optional(string)
-    database_name           = string
-    create_database         = optional(bool, true)
-    create_load_balancer    = optional(bool, true)
-    internal_load_balancer  = optional(bool, true)
-    environmentd_version    = optional(string)
-    cpu_request             = optional(string, "1")
-    memory_request          = optional(string, "1Gi")
-    memory_limit            = optional(string, "1Gi")
-    in_place_rollout        = optional(bool, false)
-    request_rollout         = optional(string)
-    force_rollout           = optional(string)
-    balancer_memory_request = optional(string, "256Mi")
-    balancer_memory_limit   = optional(string, "256Mi")
-    balancer_cpu_request    = optional(string, "100m")
-    license_key             = optional(string)
-    environmentd_extra_args = optional(list(string), [])
-  }))
-  default = []
-
-  validation {
-    condition = alltrue([
-      for instance in var.materialize_instances :
-      instance.request_rollout == null ||
-      can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", instance.request_rollout))
-    ])
-    error_message = "Request rollout must be a valid UUID in the format xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-  }
-
-  validation {
-    condition = alltrue([
-      for instance in var.materialize_instances :
-      instance.force_rollout == null ||
-      can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", instance.force_rollout))
-    ])
-    error_message = "Force rollout must be a valid UUID in the format xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-  }
+variable "install_materialize_instance" {
+  description = "Whether to install the Materialize instance. Default is false as it requires the Kubernetes cluster to be created first."
+  type        = bool
+  default     = false
 }
 
 variable "operator_version" {
   description = "Version of the Materialize operator to install"
+  type        = string
+  default     = "v25.1.12" # META: helm-chart version
+  nullable    = false
+}
+
+variable "orchestratord_version" {
+  description = "Version of the Materialize orchestrator to install"
   type        = string
   default     = null
 }
