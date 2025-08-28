@@ -263,8 +263,8 @@ resource "kubernetes_daemonset" "disk_setup" {
         init_container {
           name    = "disk-setup"
           image   = var.disk_setup_image
-          command = ["/usr/local/bin/configure-disks.sh"]
-          args    = ["--cloud-provider", "gcp"]
+          command = ["ephemeral-storage-setup"]
+          args    = ["lvm", "--cloud-provider", "gcp", "--remove-taint"]
           resources {
             limits = {
               memory = "128Mi"
@@ -301,35 +301,11 @@ resource "kubernetes_daemonset" "disk_setup" {
 
         }
 
-        init_container {
-          name    = "taint-removal"
-          image   = var.disk_setup_image
-          command = ["/usr/local/bin/remove-taint.sh"]
-          resources {
-            limits = {
-              memory = "64Mi"
-            }
-            requests = {
-              memory = "64Mi"
-              cpu    = "10m"
-            }
-          }
-          security_context {
-            run_as_user = 0
-          }
-          env {
-            name = "NODE_NAME"
-            value_from {
-              field_ref {
-                field_path = "spec.nodeName"
-              }
-            }
-          }
-        }
-
         container {
-          name  = "pause"
-          image = "gcr.io/google_containers/pause:3.2"
+          name    = "pause"
+          image   = var.disk_setup_image
+          command = ["ephemeral-storage-setup"]
+          args    = ["sleep"]
 
           resources {
             limits = {
@@ -386,7 +362,7 @@ resource "kubernetes_cluster_role" "disk_setup" {
   rule {
     api_groups = [""]
     resources  = ["nodes"]
-    verbs      = ["get", "patch"]
+    verbs      = ["get", "patch", "update"]
   }
 }
 
