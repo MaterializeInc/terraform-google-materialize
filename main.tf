@@ -181,6 +181,9 @@ locals {
           }
         }
       }
+      clusters = {
+        swap_enabled = false
+      }
     }
     storage = var.enable_disk_support ? {
       storageClass = {
