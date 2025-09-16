@@ -2,8 +2,9 @@ locals {
   node_labels = merge(
     var.labels,
     {
-      "materialize.cloud/disk" = var.enable_disk_setup ? "true" : "false"
-      "workload"               = "materialize-instance"
+      "materialize.cloud/disk"       = var.enable_disk_setup ? "true" : "false"
+      "materialize.cloud/scratch-fs" = var.enable_disk_setup ? "true" : "false"
+      "workload"                     = "materialize-instance"
     },
     var.enable_disk_setup ? {
       "materialize.cloud/disk-config-required" = "true"
