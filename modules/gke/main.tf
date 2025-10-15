@@ -1,10 +1,24 @@
 locals {
-  node_labels = merge(
+  node_labels_no_swap = merge(
     var.labels,
     {
       "materialize.cloud/disk"       = var.enable_disk_setup ? "true" : "false"
       "materialize.cloud/scratch-fs" = var.enable_disk_setup ? "true" : "false"
       "workload"                     = "materialize-instance"
+      "materialize.cloud/swap"       = "false"
+    },
+    var.enable_disk_setup ? {
+      "materialize.cloud/disk-config-required" = "true"
+    } : {}
+  )
+
+  node_labels_swap = merge(
+    var.labels,
+    {
+      "materialize.cloud/disk"       = var.enable_disk_setup ? "true" : "false"
+      "materialize.cloud/scratch-fs" = var.enable_disk_setup ? "true" : "false"
+      "workload"                     = "materialize-instance"
+      "materialize.cloud/swap"       = "true"
     },
     var.enable_disk_setup ? {
       "materialize.cloud/disk-config-required" = "true"
@@ -98,7 +112,64 @@ resource "google_container_node_pool" "primary_nodes" {
     machine_type = var.machine_type
     disk_size_gb = var.disk_size_gb
 
-    labels = local.node_labels
+    labels = local.node_labels_no_swap
+
+    dynamic "taint" {
+      for_each = local.node_taints
+      content {
+        key    = taint.value.key
+        value  = taint.value.value
+        effect = taint.value.effect
+      }
+    }
+
+    service_account = google_service_account.gke_sa.email
+
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/cloud-platform"
+    ]
+
+    local_nvme_ssd_block_config {
+      local_ssd_count = var.local_ssd_count
+    }
+
+    workload_metadata_config {
+      mode = "GKE_METADATA"
+    }
+  }
+
+  lifecycle {
+    create_before_destroy = true
+    prevent_destroy       = false
+  }
+}
+
+# create a new node pool here
+# cluster  = google_container_cluster.primary.name
+# needs a new node pool
+# all of these nodes will be swap nodes
+# they n
+
+resource "google_container_node_pool" "swap_nodes" {
+  provider = google
+
+  name     = "${var.prefix}-node-pool"
+  location = var.region
+  cluster  = google_container_cluster.primary.name
+  project  = var.project_id
+
+  node_count = var.node_count
+
+  autoscaling {
+    min_node_count = var.min_nodes
+    max_node_count = var.max_nodes
+  }
+
+  node_config {
+    machine_type = var.machine_type
+    disk_size_gb = var.disk_size_gb
+
+    labels = local.node_labels_swap
 
     dynamic "taint" {
       for_each = local.node_taints
@@ -217,6 +288,7 @@ resource "kubernetes_daemonset" "disk_setup" {
     selector {
       match_labels = {
         app = "disk-setup"
+        materialize.cloud/swap = "false"
       }
     }
 
@@ -305,6 +377,158 @@ resource "kubernetes_daemonset" "disk_setup" {
         container {
           name    = "pause"
           image   = var.disk_setup_image
+          command = ["ephemeral-storage-setup"]
+          args    = ["sleep"]
+
+          resources {
+            limits = {
+              memory = "8Mi"
+            }
+            requests = {
+              memory = "8Mi"
+              cpu    = "1m"
+            }
+          }
+
+          security_context {
+            allow_privilege_escalation = false
+            read_only_root_filesystem  = true
+            run_as_non_root            = true
+            run_as_user                = 65534
+          }
+
+        }
+
+        volume {
+          name = "dev"
+          host_path {
+            path = "/dev"
+          }
+        }
+
+        volume {
+          name = "host-root"
+          host_path {
+            path = "/"
+          }
+        }
+
+        service_account_name = kubernetes_service_account.disk_setup[0].metadata[0].name
+      }
+    }
+  }
+}
+
+resource "kubernetes_daemonset" "swap_disk_setup" {
+  count = var.enable_disk_setup ? 1 : 0
+
+  metadata {
+    name      = "swap-disk-setup"
+    namespace = kubernetes_namespace.disk_setup[0].metadata[0].name
+    labels = {
+      "app.kubernetes.io/managed-by" = "terraform"
+      "app.kubernetes.io/part-of"    = "materialize"
+      "app"                          = "swap-disk-setup"
+    }
+  }
+
+  spec {
+    selector {
+      match_labels = {
+        app = "disk-setup"
+      }
+    }
+
+    template {
+      metadata {
+        labels = {
+          app = "disk-setup"
+        }
+      }
+
+      spec {
+        security_context {
+          run_as_non_root = false
+          run_as_user     = 0
+          fs_group        = 0
+          seccomp_profile {
+            type = "RuntimeDefault"
+          }
+        }
+
+        affinity {
+          node_affinity {
+            required_during_scheduling_ignored_during_execution {
+              node_selector_term {
+                match_expressions {
+                    key      = "materialize.cloud/disk"
+                    operator = "In"
+                    values   = ["true"]
+                }
+                match_expressions {
+                    key      = "materialize.cloud/swap"
+                    operator = "In"
+                    values   = ["true"]
+                }
+              }
+            }
+          }
+        }
+
+        toleration {
+          key      = "disk-unconfigured"
+          operator = "Exists"
+          effect   = "NoSchedule"
+        }
+
+        # Use host network and PID namespace
+        host_network = true
+        host_pid     = true
+
+        init_container {
+          name    = "disk-setup"
+          image   = "materialize/ephemeral-storage-setup-image:v0.3.4"
+          command = ["ephemeral-storage-setup"]
+          args    = ["swap", "--cloud-provider", "gcp", "--remove-taint", "--hack-restart-kubelet-enable-swap"]
+          resources {
+            limits = {
+              memory = "128Mi"
+            }
+            requests = {
+              memory = "128Mi"
+              cpu    = "50m"
+            }
+          }
+
+          security_context {
+            privileged  = true
+            run_as_user = 0
+          }
+
+          env {
+            name = "NODE_NAME"
+            value_from {
+              field_ref {
+                field_path = "spec.nodeName"
+              }
+            }
+          }
+
+          volume_mount {
+            name       = "dev"
+            mount_path = "/dev"
+          }
+
+          volume_mount {
+            name       = "host-root"
+            mount_path = "/host"
+          }
+
+        }
+
+        container {
+          name    = "pause"
+          image   = var.disk_setup_image  # TODO hardcode this for the demo
           command = ["ephemeral-storage-setup"]
           args    = ["sleep"]
 
