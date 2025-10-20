@@ -66,22 +66,23 @@ module "materialize" {
     password = random_password.pass.result
   }
 
-  labels = {
-    environment = "simple"
-    example     = "true"
-  }
-
-  install_materialize_operator = true
-  operator_version             = var.operator_version
-  orchestratord_version        = var.orchestratord_version
-
-  install_cert_manager           = var.install_cert_manager
-  use_self_signed_cluster_issuer = var.use_self_signed_cluster_issuer
-
-  # Once the operator is installed, you can define your Materialize instances here.
-  materialize_instances = var.materialize_instances
-
   helm_values = {
+    environmentd = {
+      node_selector = {
+        "materialize.cloud/swap" = "true",
+        "materialize.cloud/disk" = "true"
+      }
+
+      default_resources = {
+        requests = {
+          memory = "2047Mi" # Setting the memory request to slightly less than limit allows the pod to use swap if enabled at the kubelet.
+        }
+        limits = {
+          memory = "2Gi"
+        }
+      }
+    }
+
     clusterd = {
       node_selector_term = {
         match_expressions = {
@@ -96,14 +97,14 @@ module "materialize" {
     }
     operator = {
       clusters = {
-        swap_enabled = "true"
+        swap_enabled = true
         sizes = {
           swap_cc = {
             workers = 1
             scale = 1
-            cpu_exclusive = "false"
+            cpu_exclusive = false
             cpu_limit = 0.1
-            credits_per_hour = 0.00
+            credits_per_hour = "0.00"
             disk_limit = "0MiB"
             memory_request = "775MiB"
             memory_limit = "776MiB"
@@ -113,8 +114,23 @@ module "materialize" {
           }
         }
       }
-    } 
+    }
   }
+
+  labels = {
+    environment = "simple"
+    example     = "true"
+  }
+
+  install_materialize_operator = true
+  operator_version             = var.operator_version
+  orchestratord_version        = var.orchestratord_version
+
+  install_cert_manager           = var.install_cert_manager
+  use_self_signed_cluster_issuer = var.use_self_signed_cluster_issuer
+
+  # Once the operator is installed, you can define your Materialize instances here.
+  materialize_instances = var.materialize_instances
 
   providers = {
     google     = google

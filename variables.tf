@@ -230,5 +230,5 @@ variable "disk_support_config" {
 variable "disk_setup_image" {
   description = "Docker image for the disk setup script"
   type        = string
-  default     = "materialize/ephemeral-storage-setup-image:v0.3.4"
+  default     = "materialize/ephemeral-storage-setup-image:v0.4.0"
 }

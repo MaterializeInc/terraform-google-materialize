@@ -153,7 +153,7 @@ resource "google_container_node_pool" "primary_nodes" {
 resource "google_container_node_pool" "swap_nodes" {
   provider = google
 
-  name     = "${var.prefix}-node-pool"
+  name     = "${var.prefix}-swap-node-pool"
   location = var.region
   cluster  = google_container_cluster.primary.name
   project  = var.project_id
@@ -288,7 +288,7 @@ resource "kubernetes_daemonset" "disk_setup" {
     selector {
       match_labels = {
         app = "disk-setup"
-        materialize.cloud/swap = "false"
+        "materialize.cloud/swap" = "false"
       }
     }
 
@@ -296,6 +296,7 @@ resource "kubernetes_daemonset" "disk_setup" {
       metadata {
         labels = {
           app = "disk-setup"
+          "materialize.cloud/swap" = "false"
         }
       }
 
@@ -314,9 +315,14 @@ resource "kubernetes_daemonset" "disk_setup" {
             required_during_scheduling_ignored_during_execution {
               node_selector_term {
                 match_expressions {
-                  key      = "materialize.cloud/disk"
-                  operator = "In"
-                  values   = ["true"]
+                    key      = "materialize.cloud/disk"
+                    operator = "In"
+                    values   = ["true"]
+                }
+                match_expressions {
+                    key      = "materialize.cloud/swap"
+                    operator = "In"
+                    values   = ["false"]
                 }
               }
             }
@@ -487,9 +493,9 @@ resource "kubernetes_daemonset" "swap_disk_setup" {
 
         init_container {
           name    = "disk-setup"
-          image   = "materialize/ephemeral-storage-setup-image:v0.3.4"
+          image   = "materialize/ephemeral-storage-setup-image:v0.4.0" # TODO changes here and in the args
           command = ["ephemeral-storage-setup"]
-          args    = ["swap", "--cloud-provider", "gcp", "--remove-taint", "--hack-restart-kubelet-enable-swap"]
+          args    = ["swap", "--cloud-provider", "gcp", "--remove-taint", "--hack-restart-kubelet-enable-swap",  "--apply-sysctls"]
           resources {
             limits = {
               memory = "128Mi"
@@ -528,7 +534,7 @@ resource "kubernetes_daemonset" "swap_disk_setup" {
 
         container {
           name    = "pause"
-          image   = var.disk_setup_image  # TODO hardcode this for the demo
+          image   = "materialize/ephemeral-storage-setup-image:v0.4.0" # TODO changes here
           command = ["ephemeral-storage-setup"]
           args    = ["sleep"]
 
