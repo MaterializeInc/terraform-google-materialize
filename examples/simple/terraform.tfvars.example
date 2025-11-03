@@ -22,6 +22,7 @@ network_config = {
 #     memory_limit                      = "4Gi"
 #     authenticator_kind                = "Password"
 #     external_login_password_mz_system = random_password.analytics_mz_system.result
+#     license_key                       = "[...]"
 #   },
 #   {
 #     name           = "demo"
@@ -30,5 +31,6 @@ network_config = {
 #     cpu_request    = "2"
 #     memory_request = "4Gi"
 #     memory_limit   = "4Gi"
+#     license_key    = "[...]"
 #   }
 # ]
