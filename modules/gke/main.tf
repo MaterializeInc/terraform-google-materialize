@@ -164,18 +164,67 @@ resource "helm_release" "openebs" {
   chart      = "openebs"
   version    = var.openebs_version
 
-  set {
-    name  = "engines.replicated.mayastor.enabled"
-    value = "false"
-  }
-
-  # Unable to continue with install: CustomResourceDefinition "volumesnapshotclasses.snapshot.storage.k8s.io"
-  # in namespace "" exists and cannot be imported into the current release
-  # https://github.com/openebs/website/pull/506
-  set {
-    name  = "openebs-crds.csi.volumeSnapshots.enabled"
-    value = "false"
-  }
+  values = [jsonencode({
+    "alloy" : {
+      "enabled" : false,
+    },
+    "localpv-provisioner" : {
+      "localpv" : {
+        "enabled" : false,
+      },
+      "hostpathClass" : {
+        "enabled" : false,
+      },
+      "serviceAccount" : {
+        "create" : false,
+      },
+    },
+    "zfs-localpv" : {
+      "enabled" : false,
+    },
+    "loki" : {
+      "enabled" : false,
+    },
+    "mayastor" : {
+      "enabled" : false,
+    },
+    "minio" : {
+      "enabled" : false,
+    },
+    "lvm-localpv" : {
+      "analytics" : {
+        "enabled" : false,
+      },
+      "lvmNode" : {
+        "nodeSelector" : {
+          "materialize.cloud/scratch-fs" : "true",
+          "workload" : "materialize-instance",
+        },
+      },
+    },
+    "engines" : {
+      "local" : {
+        "zfs" : {
+          "enabled" : false,
+        },
+      },
+      "replicated" : {
+        "mayastor" : {
+          "enabled" : false,
+        },
+      },
+    },
+    # Unable to continue with install: CustomResourceDefinition "volumesnapshotclasses.snapshot.storage.k8s.io"
+    # in namespace "" exists and cannot be imported into the current release
+    # https://github.com/openebs/website/pull/506
+    "openebs-crds" : {
+      "csi" : {
+        "volumeSnapshots" : {
+          "enabled" : false,
+        },
+      },
+    },
+  })]
 
   depends_on = [
     google_container_cluster.primary,
