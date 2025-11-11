@@ -18,6 +18,8 @@ locals {
       effect = "NO_SCHEDULE"
     }
   ] : []
+
+  disk_setup_name = "disk-setup-scratchfs"
 }
 
 resource "google_service_account" "gke_sa" {
@@ -237,7 +239,7 @@ resource "kubernetes_namespace" "disk_setup" {
   count = var.enable_disk_setup ? 1 : 0
 
   metadata {
-    name = "disk-setup"
+    name = local.disk_setup_name
     labels = {
       "app.kubernetes.io/managed-by" = "terraform"
       "app.kubernetes.io/part-of"    = "materialize"
@@ -253,26 +255,26 @@ resource "kubernetes_daemonset" "disk_setup" {
   count = var.enable_disk_setup ? 1 : 0
 
   metadata {
-    name      = "disk-setup"
+    name      = local.disk_setup_name
     namespace = kubernetes_namespace.disk_setup[0].metadata[0].name
     labels = {
       "app.kubernetes.io/managed-by" = "terraform"
       "app.kubernetes.io/part-of"    = "materialize"
-      "app"                          = "disk-setup"
+      "app"                          = local.disk_setup_name
     }
   }
 
   spec {
     selector {
       match_labels = {
-        app = "disk-setup"
+        app = local.disk_setup_name
       }
     }
 
     template {
       metadata {
         labels = {
-          app = "disk-setup"
+          app = local.disk_setup_name
         }
       }
 
@@ -291,7 +293,7 @@ resource "kubernetes_daemonset" "disk_setup" {
             required_during_scheduling_ignored_during_execution {
               node_selector_term {
                 match_expressions {
-                  key      = "materialize.cloud/disk"
+                  key      = "materialize.cloud/scratch-fs"
                   operator = "In"
                   values   = ["true"]
                 }
@@ -399,7 +401,7 @@ resource "kubernetes_daemonset" "disk_setup" {
 resource "kubernetes_service_account" "disk_setup" {
   count = var.enable_disk_setup ? 1 : 0
   metadata {
-    name      = "disk-setup"
+    name      = local.disk_setup_name
     namespace = kubernetes_namespace.disk_setup[0].metadata[0].name
   }
 }
@@ -407,7 +409,7 @@ resource "kubernetes_service_account" "disk_setup" {
 resource "kubernetes_cluster_role" "disk_setup" {
   count = var.enable_disk_setup ? 1 : 0
   metadata {
-    name = "disk-setup"
+    name = local.disk_setup_name
   }
   rule {
     api_groups = [""]
@@ -419,7 +421,7 @@ resource "kubernetes_cluster_role" "disk_setup" {
 resource "kubernetes_cluster_role_binding" "disk_setup" {
   count = var.enable_disk_setup ? 1 : 0
   metadata {
-    name = "disk-setup"
+    name = local.disk_setup_name
   }
   role_ref {
     api_group = "rbac.authorization.k8s.io"

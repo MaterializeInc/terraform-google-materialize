@@ -62,6 +62,27 @@ module "gke" {
   labels    = local.common_labels
 }
 
+module "swap_nodepool" {
+  count      = var.swap_enabled ? 1 : 0
+  source     = "./modules/nodepool"
+  depends_on = [module.gke]
+
+  prefix                = "${var.prefix}-mz-swap"
+  region                = var.region
+  enable_private_nodes  = true
+  cluster_name          = module.gke.cluster_name
+  project_id            = var.project_id
+  min_nodes             = var.gke_config.min_nodes
+  max_nodes             = var.gke_config.max_nodes
+  machine_type          = var.gke_config.machine_type
+  disk_size_gb          = var.gke_config.disk_size_gb
+  service_account_email = module.gke.service_account_email
+  labels                = local.common_labels
+
+  swap_enabled    = true
+  local_ssd_count = local.disk_config.local_ssd_count
+}
+
 module "database" {
   source = "./modules/database"
 
@@ -121,6 +142,7 @@ module "operator" {
 
   depends_on = [
     module.gke,
+    module.swap_nodepool,
     module.database,
     module.storage,
     module.certificates,
@@ -182,7 +204,7 @@ locals {
         }
       }
       clusters = {
-        swap_enabled = false
+        swap_enabled = var.swap_enabled
       }
     }
     storage = var.enable_disk_support ? {
