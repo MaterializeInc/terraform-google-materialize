@@ -71,6 +71,8 @@ module "materialize" {
     example     = "true"
   }
 
+  swap_enabled = var.swap_enabled
+
   install_materialize_operator = true
   operator_version             = var.operator_version
   orchestratord_version        = var.orchestratord_version
