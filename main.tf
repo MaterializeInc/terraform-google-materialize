@@ -10,7 +10,7 @@ locals {
     run_disk_setup_script     = var.enable_disk_support ? lookup(var.disk_support_config, "run_disk_setup_script", true) : false
     local_ssd_count           = lookup(var.disk_support_config, "local_ssd_count", 1)
     create_storage_class      = var.enable_disk_support ? lookup(var.disk_support_config, "create_storage_class", true) : false
-    openebs_version           = lookup(var.disk_support_config, "openebs_version", "4.2.0")
+    openebs_version           = lookup(var.disk_support_config, "openebs_version", "4.3.3")
     openebs_namespace         = lookup(var.disk_support_config, "openebs_namespace", "openebs")
     storage_class_name        = lookup(var.disk_support_config, "storage_class_name", "openebs-lvm-instance-store-ext4")
     storage_class_provisioner = "local.csi.openebs.io"
