@@ -73,7 +73,7 @@ disk_support_config = {
   local_ssd_count = 1
   
   create_storage_class = true
-  openebs_version ="4.2.0"
+  openebs_version ="4.3.3"
   openebs_namespace = "openebs"
   storage_class_name = "openebs-lvm-instance-store-ext4"
 }
@@ -103,7 +103,7 @@ gke_config = {
 }
 
 disk_support_config = {
-  openebs_version    = "4.2.0"
+  openebs_version    = "4.3.3"
   storage_class_name = "custom-storage-class"
   
   # Each local NVMe SSD in GCP provides 375GB of storage.
