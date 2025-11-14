@@ -71,7 +71,7 @@ disk_support_config = {
   # Meeting/exceeding the minimum recommended 2:1 disk-to-RAM ratio (375GB disk:64GB RAM)
   local_ssd_count = 1
   create_storage_class = true
-  openebs_version ="4.2.0"
+  openebs_version ="4.3.3"
   openebs_namespace = "openebs"
   storage_class_name = "openebs-lvm-instance-store-ext4"
 }
@@ -100,7 +100,7 @@ gke_config = {
 }
 
 disk_support_config = {
-  openebs_version    = "4.2.0"
+  openebs_version    = "4.3.3"
   storage_class_name = "custom-storage-class"
   # Each local NVMe SSD in GCP provides 375GB of storage.
   # local_ssd_count provides 2 x 375GB = 750GB of local NVMe SSD storage per node.
@@ -247,7 +247,7 @@ We now have some initial support for swap.
 
 To use swap:
 1. Set `swap_enabled` to `true`.
-2. Ensure your `environmentd_version` is at least `v0.26.0`.
+2. Ensure your `environmentd_version` is at least `v26.0.0`.
 3. Update your `request_rollout` (and `force_rollout` if already at the correct `environmentd_version`).
 4. Run `terraform apply`.
 
