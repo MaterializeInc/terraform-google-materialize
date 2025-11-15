@@ -171,7 +171,7 @@ No providers.
 | <a name="module_gke"></a> [gke](#module\_gke) | ./modules/gke | n/a |
 | <a name="module_load_balancers"></a> [load\_balancers](#module\_load\_balancers) | ./modules/load_balancers | n/a |
 | <a name="module_networking"></a> [networking](#module\_networking) | ./modules/networking | n/a |
-| <a name="module_operator"></a> [operator](#module\_operator) | github.com/MaterializeInc/terraform-helm-materialize | v0.1.31 |
+| <a name="module_operator"></a> [operator](#module\_operator) | github.com/MaterializeInc/terraform-helm-materialize | v0.1.32 |
 | <a name="module_storage"></a> [storage](#module\_storage) | ./modules/storage | n/a |
 | <a name="module_swap_nodepool"></a> [swap\_nodepool](#module\_swap\_nodepool) | ./modules/nodepool | n/a |
 
