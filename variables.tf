@@ -24,22 +24,64 @@ variable "network_config" {
   })
 }
 
-variable "gke_config" {
-  description = "GKE cluster configuration. Make sure to use large enough machine types for your Materialize instances."
-  type = object({
-    node_count   = number
-    machine_type = string
-    disk_size_gb = number
-    min_nodes    = number
-    max_nodes    = number
-  })
-  default = {
-    node_count   = 1
-    machine_type = "n2-highmem-8"
-    disk_size_gb = 100
-    min_nodes    = 1
-    max_nodes    = 2
-  }
+variable "system_node_group_node_count" {
+  description = "Number of nodes in the system node group"
+  type        = number
+  default     = 1
+}
+
+variable "system_node_group_machine_type" {
+  description = "Machine type for system nodes"
+  type        = string
+  default     = "n2-highmem-8"
+}
+
+variable "system_node_group_disk_size_gb" {
+  description = "Size of the disk attached to each system node"
+  type        = number
+  default     = 100
+}
+
+variable "system_node_group_min_nodes" {
+  description = "Minimum number of system nodes"
+  type        = number
+  default     = 1
+}
+
+variable "system_node_group_max_nodes" {
+  description = "Maximum number of system nodes"
+  type        = number
+  default     = 2
+}
+
+variable "materialize_node_group_min_nodes" {
+  description = "Minimum number of Materialize worker nodes"
+  type        = number
+  default     = 1
+}
+
+variable "materialize_node_group_max_nodes" {
+  description = "Maximum number of Materialize worker nodes"
+  type        = number
+  default     = 2
+}
+
+variable "materialize_node_group_machine_type" {
+  description = "Machine type for Materialize worker nodes"
+  type        = string
+  default     = "n2-highmem-8"
+}
+
+variable "materialize_node_group_disk_size_gb" {
+  description = "Size of the disk attached to each Materialize worker node"
+  type        = number
+  default     = 100
+}
+
+variable "materialize_node_group_local_ssd_count" {
+  description = "Number of local NVMe SSDs to attach to each Materialize node. In GCP, each disk is 375GB."
+  type        = number
+  default     = 1
 }
 
 variable "database_config" {
@@ -211,12 +253,6 @@ variable "enable_disk_support" {
   description = "Enable disk support for Materialize using OpenEBS and local SSDs. When enabled, this configures OpenEBS, runs the disk setup script, and creates appropriate storage classes."
   type        = bool
   default     = true
-}
-
-variable "swap_enabled" {
-  description = "Enable swap for Materialize. When enabled, this configures swap on a new nodepool, and adds it to the clusterd node selectors."
-  type        = bool
-  default     = false
 }
 
 variable "disk_support_config" {

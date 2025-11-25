@@ -4,6 +4,7 @@ locals {
     module     = "materialize"
   })
 
+  # TODO we can't delete this until we're certain no one is using it
   # Disk support configuration
   disk_config = {
     install_openebs           = var.enable_disk_support ? lookup(var.disk_support_config, "install_openebs", true) : false
@@ -44,12 +45,13 @@ module "gke" {
   network_name = module.networking.network_name
   subnet_name  = module.networking.subnet_name
 
-  node_count   = var.gke_config.node_count
-  machine_type = var.gke_config.machine_type
-  disk_size_gb = var.gke_config.disk_size_gb
-  min_nodes    = var.gke_config.min_nodes
-  max_nodes    = var.gke_config.max_nodes
+  node_count   = var.system_node_group_node_count
+  machine_type = var.system_node_group_machine_type
+  disk_size_gb = var.system_node_group_disk_size_gb
+  min_nodes    = var.system_node_group_min_nodes
+  max_nodes    = var.system_node_group_max_nodes
 
+  # We can't uninstall this until we're certain that we're no longer using it.
   # Disk support configuration
   enable_disk_setup = local.disk_config.run_disk_setup_script
   local_ssd_count   = local.disk_config.local_ssd_count
@@ -62,8 +64,7 @@ module "gke" {
   labels    = local.common_labels
 }
 
-module "swap_nodepool" {
-  count      = var.swap_enabled ? 1 : 0
+module "materialize_nodepool" {
   source     = "./modules/nodepool"
   depends_on = [module.gke]
 
@@ -72,15 +73,20 @@ module "swap_nodepool" {
   enable_private_nodes  = true
   cluster_name          = module.gke.cluster_name
   project_id            = var.project_id
-  min_nodes             = var.gke_config.min_nodes
-  max_nodes             = var.gke_config.max_nodes
-  machine_type          = var.gke_config.machine_type
-  disk_size_gb          = var.gke_config.disk_size_gb
+  min_nodes             = var.materialize_node_group_min_nodes
+  max_nodes             = var.materialize_node_group_max_nodes
+  machine_type          = var.materialize_node_group_machine_type
+  disk_size_gb          = var.materialize_node_group_disk_size_gb
   service_account_email = module.gke.service_account_email
   labels                = local.common_labels
 
   swap_enabled    = true
-  local_ssd_count = local.disk_config.local_ssd_count
+  local_ssd_count = var.materialize_node_group_local_ssd_count
+}
+
+moved {
+  from = module.swap_nodepool[0]
+  to   = module.materialize_nodepool
 }
 
 module "database" {
@@ -142,7 +148,7 @@ module "operator" {
 
   depends_on = [
     module.gke,
-    module.swap_nodepool,
+    module.materialize_nodepool,
     module.database,
     module.storage,
     module.certificates,
@@ -204,9 +210,10 @@ locals {
         }
       }
       clusters = {
-        swap_enabled = var.swap_enabled
+        swap_enabled = true
       }
     }
+    # TODO we can't delete this until we're certain no one is using it
     storage = var.enable_disk_support ? {
       storageClass = {
         create      = local.disk_config.create_storage_class
