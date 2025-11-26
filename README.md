@@ -79,9 +79,6 @@ No resources.
 | <a name="input_cert_manager_install_timeout"></a> [cert\_manager\_install\_timeout](#input\_cert\_manager\_install\_timeout) | Timeout for installing the cert-manager helm chart, in seconds. | `number` | `300` | no |
 | <a name="input_cert_manager_namespace"></a> [cert\_manager\_namespace](#input\_cert\_manager\_namespace) | The name of the namespace in which cert-manager is or will be installed. | `string` | `"cert-manager"` | no |
 | <a name="input_database_config"></a> [database\_config](#input\_database\_config) | Cloud SQL configuration | <pre>object({<br/>    tier     = optional(string, "db-custom-2-4096")<br/>    version  = optional(string, "POSTGRES_15")<br/>    password = string<br/>    username = optional(string, "materialize")<br/>    db_name  = optional(string, "materialize")<br/>  })</pre> | n/a | yes |
-| <a name="input_disk_setup_image"></a> [disk\_setup\_image](#input\_disk\_setup\_image) | Docker image for the disk setup script | `string` | `"materialize/ephemeral-storage-setup-image:v0.3.4"` | no |
-| <a name="input_disk_support_config"></a> [disk\_support\_config](#input\_disk\_support\_config) | Advanced configuration for disk support (only used when enable\_disk\_support = true) | <pre>object({<br/>    install_openebs       = optional(bool, true)<br/>    run_disk_setup_script = optional(bool, true)<br/>    local_ssd_count       = optional(number, 1)<br/>    create_storage_class  = optional(bool, true)<br/>    openebs_version       = optional(string, "4.3.3")<br/>    openebs_namespace     = optional(string, "openebs")<br/>    storage_class_name    = optional(string, "openebs-lvm-instance-store-ext4")<br/>  })</pre> | `{}` | no |
-| <a name="input_enable_disk_support"></a> [enable\_disk\_support](#input\_enable\_disk\_support) | Enable disk support for Materialize using OpenEBS and local SSDs. When enabled, this configures OpenEBS, runs the disk setup script, and creates appropriate storage classes. | `bool` | `true` | no |
 | <a name="input_helm_chart"></a> [helm\_chart](#input\_helm\_chart) | Chart name from repository or local path to chart. For local charts, set the path to the chart directory. | `string` | `"materialize-operator"` | no |
 | <a name="input_helm_values"></a> [helm\_values](#input\_helm\_values) | Values to pass to the Helm chart | `any` | `{}` | no |
 | <a name="input_install_cert_manager"></a> [install\_cert\_manager](#input\_install\_cert\_manager) | Whether to install cert-manager. | `bool` | `true` | no |
@@ -140,6 +137,15 @@ TLS support is provided by using `cert-manager` and a self-signed `ClusterIssuer
 More advanced TLS support using user-provided CAs or per-Materialize `Issuer`s are out of scope for this Terraform module. Please refer to the [cert-manager documentation](https://cert-manager.io/docs/configuration/) for detailed guidance on more advanced usage.
 
 ## Upgrade Notes
+
+#### v0.8.0
+
+You must upgrade to at least v0.7.x before upgrading to v0.8.x of this terraform code.
+
+Breaking changes:
+* The system node group is renamed and significantly modified, forcing a recreation.
+* Both node groups are now locked to consistent configurations and ON\\_DEMAND scheduling.
+* OpenEBS is removed, and with it all support for lgalloc, our legacy spill to disk mechanism.
 
 #### v0.7.0
 

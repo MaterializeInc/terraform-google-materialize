@@ -14,6 +14,15 @@ More advanced TLS support using user-provided CAs or per-Materialize `Issuer`s a
 
 ## Upgrade Notes
 
+#### v0.8.0
+
+You must upgrade to at least v0.7.x before upgrading to v0.8.x of this terraform code.
+
+Breaking changes:
+* The system node group is renamed and significantly modified, forcing a recreation.
+* Both node groups are now locked to consistent configurations and ON\_DEMAND scheduling.
+* OpenEBS is removed, and with it all support for lgalloc, our legacy spill to disk mechanism.
+
 #### v0.7.0
 
 This is an intermediate version to handle some changes that must be applied in stages.

@@ -247,30 +247,3 @@ variable "cert_manager_chart_version" {
   type        = string
   default     = "v1.17.1"
 }
-
-# Disk support configuration
-variable "enable_disk_support" {
-  description = "Enable disk support for Materialize using OpenEBS and local SSDs. When enabled, this configures OpenEBS, runs the disk setup script, and creates appropriate storage classes."
-  type        = bool
-  default     = true
-}
-
-variable "disk_support_config" {
-  description = "Advanced configuration for disk support (only used when enable_disk_support = true)"
-  type = object({
-    install_openebs       = optional(bool, true)
-    run_disk_setup_script = optional(bool, true)
-    local_ssd_count       = optional(number, 1)
-    create_storage_class  = optional(bool, true)
-    openebs_version       = optional(string, "4.3.3")
-    openebs_namespace     = optional(string, "openebs")
-    storage_class_name    = optional(string, "openebs-lvm-instance-store-ext4")
-  })
-  default = {}
-}
-
-variable "disk_setup_image" {
-  description = "Docker image for the disk setup script"
-  type        = string
-  default     = "materialize/ephemeral-storage-setup-image:v0.3.4"
-}
