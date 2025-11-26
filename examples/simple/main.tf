@@ -71,7 +71,19 @@ module "materialize" {
     example     = "true"
   }
 
-  swap_enabled = var.swap_enabled
+  # System node group configuration
+  system_node_group_node_count   = 1
+  system_node_group_machine_type = "n2-highmem-8"
+  system_node_group_disk_size_gb = 100
+  system_node_group_min_nodes    = 1
+  system_node_group_max_nodes    = 2
+
+  # Materialize node group configuration
+  materialize_node_group_machine_type    = "n2-highmem-8"
+  materialize_node_group_disk_size_gb    = 100
+  materialize_node_group_min_nodes       = 1
+  materialize_node_group_max_nodes       = 2
+  materialize_node_group_local_ssd_count = 1
 
   install_materialize_operator = true
   operator_version             = var.operator_version
