@@ -72,10 +72,10 @@ module "materialize" {
   }
 
   # System node group configuration
-  system_node_group_node_count   = 1
-  system_node_group_machine_type = "n2-highmem-8"
+  system_node_group_node_count   = 2
+  system_node_group_machine_type = "n2-standard-4"
   system_node_group_disk_size_gb = 100
-  system_node_group_min_nodes    = 1
+  system_node_group_min_nodes    = 2
   system_node_group_max_nodes    = 2
 
   # Materialize node group configuration
