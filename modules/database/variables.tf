@@ -18,6 +18,12 @@ variable "network_id" {
   type        = string
 }
 
+variable "private_vpc_connection" {
+  description = "The private VPC connection dependency"
+  type        = any
+  default     = null
+}
+
 variable "tier" {
   description = "The machine tier for the database instance"
   type        = string
@@ -54,4 +60,10 @@ variable "labels" {
   description = "Labels to apply to resources"
   type        = map(string)
   default     = {}
+}
+
+variable "vpc_wait_duration" {
+  description = "Duration to wait for VPC resources to be ready (e.g., '60s')"
+  type        = string
+  default     = "60s"
 }

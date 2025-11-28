@@ -1,11 +1,19 @@
+resource "time_sleep" "wait_for_vpc" {
+  depends_on = [var.private_vpc_connection]
+
+  create_duration = var.vpc_wait_duration
+}
+
 resource "google_sql_database_instance" "materialize" {
+  depends_on = [time_sleep.wait_for_vpc]
+
   name             = "${var.prefix}-pg"
   database_version = var.db_version
   region           = var.region
   project          = var.project_id
 
   timeouts {
-    create = "60m"
+    create = "75m"
     update = "45m"
     delete = "45m"
   }
