@@ -100,6 +100,12 @@ variable "database_config" {
   }
 }
 
+variable "database_vpc_wait_duration" {
+  description = "Duration to wait for VPC resources to be ready before creating the database (e.g., '60s', '2m')"
+  type        = string
+  default     = "60s"
+}
+
 variable "namespace" {
   description = "Kubernetes namespace for Materialize"
   type        = string

@@ -81,6 +81,9 @@ module "database" {
   db_version = var.database_config.version
   password   = var.database_config.password
 
+  private_vpc_connection = module.networking.private_vpc_connection
+  vpc_wait_duration      = var.database_vpc_wait_duration
+
   labels = local.common_labels
 }
 
