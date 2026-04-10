@@ -1,11 +1,4 @@
 <!-- BEGIN_TF_DOCS -->
-> [!WARNING]
-> This repository is DEPRECATED!
->
-> We strongly recommend you migrate to [our new Terraform modules](https://github.com/MaterializeInc/materialize-terraform-self-managed) instead.
->
-> While migration is not completely automated, we do have [examples and scripts](https://github.com/MaterializeInc/materialize-terraform-self-managed/tree/main/gcp/examples/migration) to help with the transition.
-
 # Materialize on Google Cloud Platform
 
 Terraform module for deploying Materialize on Google Cloud Platform (GCP) with all required infrastructure components.
@@ -71,7 +64,7 @@ No providers.
 | <a name="module_load_balancers"></a> [load\_balancers](#module\_load\_balancers) | ./modules/load_balancers | n/a |
 | <a name="module_materialize_nodepool"></a> [materialize\_nodepool](#module\_materialize\_nodepool) | ./modules/nodepool | n/a |
 | <a name="module_networking"></a> [networking](#module\_networking) | ./modules/networking | n/a |
-| <a name="module_operator"></a> [operator](#module\_operator) | github.com/MaterializeInc/terraform-helm-materialize | v0.1.58 |
+| <a name="module_operator"></a> [operator](#module\_operator) | github.com/MaterializeInc/terraform-helm-materialize | v0.1.59 |
 | <a name="module_storage"></a> [storage](#module\_storage) | ./modules/storage | n/a |
 
 ## Resources
