@@ -1,4 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
+> [!NOTE]
+> A newer module is available at [materialize-terraform-self-managed](https://github.com/MaterializeInc/materialize-terraform-self-managed). It takes a more modular approach so you can pick the pieces you need. If you would like to move over, the [GCP migration example](https://github.com/MaterializeInc/materialize-terraform-self-managed/tree/main/gcp/examples/migration) is a good starting point.
+
 # Materialize on Google Cloud Platform
 
 Terraform module for deploying Materialize on Google Cloud Platform (GCP) with all required infrastructure components.
